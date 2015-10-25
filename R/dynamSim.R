@@ -37,7 +37,9 @@ dynamSim = function(M,
   if(plot) {
     timeline = seq(0,Tmax, by=timestep)[-1]
     plot(timeline, trajectory[ , 1], pch="",
-         ylim = range(c(trajectory)), ylab="trajectory")
+         ylim = range(c(trajectory)),
+         ylab="trajectories",
+         main="Dynamics")
     for(species in 1:nSpecies)
       lines(timeline, trajectory[ , species], col=species)
     legend("topright", rownames(M), text.col=1:nSpecies, horiz = TRUE)
