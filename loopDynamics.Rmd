@@ -58,18 +58,19 @@ makeSliders = function()  {
     split(1:length(returnVal),
           (-1 + 1:length(returnVal))%/%length(returnVal)
     ),
-    function(sliders) fluidRow(returnVal[sliders]) 
-    )  #shiny::tagAppendAttributes() 
+    function(sliders) fluidRow(
+      lapply(returnVal[sliders], column, width=3) 
+    ))  #shiny::tagAppendAttributes() 
   returnVal                         
 }
-
-inputPanel(
-  makeSliders()
-)
-
 renderTable({
   make.M()  
 })
+
+
+fluidPage(
+  makeSliders()
+)
 
 
 renderPlot({

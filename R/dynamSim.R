@@ -5,7 +5,8 @@ dynamSim = function(M,
                     plot=TRUE, print=FALSE,
                     findEq=TRUE,
                     returnLast=FALSE,
-                    noNeg=TRUE) {
+                    noNeg=TRUE,
+                    attachAttributes=FALSE) {
   if(missing(M)) {
     if(length(find("cm.levins")) == 0)
        data(cm.levins)
@@ -46,12 +47,18 @@ dynamSim = function(M,
   }
   if(findEq) {
     cat("predictedEq:\n")
-    print(solve(values, -constants))
+    predictedEq = print(solve(values, -constants))
   }
   if(returnLast)  # Last
-    return (trajectory[length(timeline), ])
-  if(print) return(trajectory)
-  return(invisible(trajectory))
+    returnVal = trajectory[length(timeline), ]
+  else returnVal = trajectory
+  if(attachAttributes) {
+    `attr<-`(returnVal, "predictedEq", predictedEq)
+    `attr<-`(returnVal, "effectMatrix", LoopAnalyst::make.cem(M))  ### too much time!
+    #`attr<-`(returnVal, "effectMatrix", 1:4)
+  }
+  if(print) return(returnVal)
+  return(returnVal)
 }
 modifyValues = function(M, from, to, increment) {
   M[to, from ] = M[to, from ] + increment
