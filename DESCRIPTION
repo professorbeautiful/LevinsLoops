@@ -1,0 +1,11 @@
+Package: LevinsLoops
+Type: Package
+Title: Building dynamic simulation for Levins loop models.
+Version: 0.1
+Date: 2015-10-22
+Author: Roger Day
+Maintainer: Who to complain to <day01@pitt.edu>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
+Requires: LoopAnalyst
+LazyData: TRUE

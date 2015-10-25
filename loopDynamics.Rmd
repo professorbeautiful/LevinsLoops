@@ -1,0 +1,52 @@
+---
+title: "loopDynamics"
+author: "Roger Day"
+date: "October 24, 2015"
+output: html_document
+runtime: shiny
+---
+
+
+
+```{r, echo=FALSE}
+library(shinyTable)
+inputPanel(
+
+  sliderInput("X1X1", label = "X1 -> X1",
+              min = -1, max = 1, value = -1, step = 0.01),
+  sliderInput("X1X2", label = "X1 -> X2",
+              min = -1, max = 1, value = 1, step = 0.2),
+  sliderInput("X2X1", label = "X2 -> X1",
+              min = -1, max = 1, value = -1, step = 0.2),
+  sliderInput("X2X2", label = "X2 -> X2",
+              min = -1, max = 1, value = 0, step = 0.01)
+)
+
+make.M = reactive({
+    M = cbind(c(input$X1X1, input$X1X2),
+              c(input$X2X1, input$X2X2) )
+})
+
+output$sliders = renderUI({
+  M = make.M()
+  lapply(t(expand.grid(names(M))), function(nodes)
+         sliderInput(paste0(nodes), label = paste(nodes, sep=" -> ",
+              min = -1, max = 1, value = 0, step = 0.01)
+})
+
+renderTable({
+  make.M()  
+})
+
+
+renderPlot({
+  library(LevinsLoops)
+  result = dynamSim(M=  make.M(), returnLast = TRUE)
+  abline(h=result)
+  if(exists("previousResult")) 
+    abline(h=previousResult, lty=2)
+  previousResult <<- result
+})
+```
+
+
