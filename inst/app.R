@@ -24,7 +24,7 @@ makeSliders = function()  {
           1 + (-1 + 1:length(returnVal)) %% length(nodeNames)
     ),
     function(sliders) fluidRow(
-      lapply(returnVal[sliders], column, width=1)
+      lapply(returnVal[sliders], column, width=3)
     ))  #shiny::tagAppendAttributes()
   returnVal
 }
@@ -66,7 +66,8 @@ output$predictedEq = renderTable({
   cat("predictedEq:\n")
   predictedEq = attr(rValues$result, "predictedEq")
   predictedEq =  as.data.frame(as.list(predictedEq))
-  rownames(predictedEq) = "predicted equilibrium"
+  predictedEq = rbind(predictedEq, rValues$result)
+  rownames(predictedEq) = c("predicted equilibrium", 'final in simulation')
   print(predictedEq)
 })
   output$plot = renderPlot({
@@ -81,11 +82,11 @@ output$predictedEq = renderTable({
 }
 
 ui = fluidPage(
-  makeSliders(),
-  tableOutput("predictedEq"),
-  fluidRow(  column(2, "Community matrix:"), column(4, tableOutput("table")),
-             #"SPACEHOLDER"),
-                    column(2, "Effects:"), column(4, tableOutput("effectMatrix"))),
+  fluidRow(column(6,  makeSliders()),
+           column(3, "Community matrix", tableOutput("table")),
+           column(3, "Effect matrix", tableOutput("effectMatrix"))
+  ),
+  fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
   plotOutput("plot")
 )
 
