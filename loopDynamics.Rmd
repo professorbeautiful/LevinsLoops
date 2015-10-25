@@ -12,31 +12,60 @@ runtime: shiny
 
 library(LevinsLoops)
 data("cm.levins", package="LoopAnalyst")
+nodeNames = rownames(cm.levins)
 
 make.M = reactive({
-  if(!is.null(input$X1X1))
-    M = cbind(c(input$X1X1, input$X1X2),
-              c(input$X2X1, input$X2X2) )
-  else
-    M = cm.levins
-  M
+#   if(!is.null(input$X1X1))
+#     M = cbind(c(input$X1X1, input$X1X2),
+#               c(input$X2X1, input$X2X2) )
+#   else
+  M = cm.levins
+  Mtry = try({  
+    for(X1 in nodeNames)
+      for(X2 in nodeNames)
+        M[X2,X1] = input[[nodeNameID(X1,X2)]]
+  })
+  print(M)
+  print(Mtry)
+  print(class(Mtry))
+  if(class(Mtry) == 'try-error'
+     | is.null(Mtry)) returnVal = M
+  else returnVal = Mtry
+  (returnVal)
 })
 
+nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
+nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
 #output$sliders = 
-renderUI({
-  cat("Running renderUI\n")
-  M = make.M()
-  returnVal = lapply(t(expand.grid(names(M))), function(nodes)
-         sliderInput(paste0(nodes), 
-              label = paste(nodes, sep=" -> ",
-              min = -1.5, max = 1.5, value = 0, step = 0.01)
-         ))
-  print(returnVal)
-})
+#renderUI(
+makeSliders = function()  {
+  M = cm.levins
+  nameGrid = expand.grid(rownames(M), rownames(M), stringsAsFactors = FALSE)
+  #print(nameGrid)
+  returnVal = lapply(1:nrow(nameGrid), 
+                     function(linkNum) {
+                       nodes = unlist(nameGrid[linkNum, ])
+                       node_to = nodes[1]
+                       node_from = nodes[2]
+                       numericInput(inputId = nodeNameID(node_from, node_to), 
+                                   label = nodeNameLabel(node_from, node_to),
+                                   min = -1.5, max = 1.5, 
+                                   value = M[node_to, node_from], 
+                                   step = 0.01)
+                     }
+         )
+  returnVal = lapply(
+    split(1:length(returnVal),
+          (-1 + 1:length(returnVal))%/%length(returnVal)
+    ),
+    function(sliders) fluidRow(returnVal[sliders]) 
+    )  #shiny::tagAppendAttributes() 
+  returnVal                         
+}
 
-# inputPanel(
-#   uiOutput("sliders")
-# )
+inputPanel(
+  makeSliders()
+)
 
 renderTable({
   make.M()  
@@ -45,7 +74,7 @@ renderTable({
 
 renderPlot({
   library(LevinsLoops)
-  result = dynamSim(M=  make.M(), returnLast = TRUE)
+  result = dynamSim(M = make.M(), returnLast = TRUE)
   abline(h=result)
   if(exists("previousResult")) 
     abline(h=previousResult, lty=2)
