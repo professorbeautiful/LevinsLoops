@@ -1,4 +1,17 @@
-stringToCM = function(linkstring="a->b a-oa b-oa") {
+#'stringToCM
+#'
+#'Conversion from a loop string to a community matrix.
+#'
+#' @param linkstring String of links separated by spaces and/or newlines. Each link connects two nodenames with "->" "o->" etc.
+#' @return An NxN community matrix, where N=# distinct nodes.
+#' @examples{
+#' stringToCM(
+#'    "a o-> b
+#'     b o-> c
+#'        a -o a")
+#'  }
+
+#'stringToCM = function(linkstring="a->b a-oa b-oa") {
   linkstring = gsub("[ \n]+", " ", linkstring) # Remove newlines
   # the next 2 lines remove  spaces,
   #  allow user to put in spaces for readability.
@@ -64,9 +77,22 @@ D-oC
 D->E
 E->D"
 
+#' CMtoIPMnet
+#'
+#' Convert a community matrix to a string suitable for ipmnet.org/loop
+#'
+#' @param cm A community matrix
+#' @return A string suitable for ipmnet.org/loop
+#' @example {
+#' CMtoIPMnet(stringToCM(ABCDE))
+#' ### At ipmnet, generate the predictions. Then compare to LoopAnalyst:
+#' library("LoopAnalyst")
+#' LoopAnalyst::make.cem(stringToCM(ABCDE))
+#' }
+#'
 CMtoIPMnet = function(cm) {
   N = nrow(cm)
-  matstring =
+s  matstring =
     paste0(collapse=',',
            sapply(1:nrow(cm),
                   function(rownum)
