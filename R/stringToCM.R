@@ -1,4 +1,17 @@
-stringToCM = function(linkstring="a->b a-oa b-oa") {
+#'stringToCM
+#'
+#'Conversion from a loop string to a community matrix.
+#'
+#' @param linkstring String of links separated by spaces and/or newlines. Each link connects two nodenames with "->" "o->" etc.
+#' @return An NxN community matrix, where N=# distinct nodes.
+#' @examples{
+#' stringToCM(
+#'    "a o-> b
+#'     b o-> c
+#'        a -o a")
+#'  }
+
+#'stringToCM = function(linkstring="a->b a-oa b-oa") {
   linkstring = gsub("[ \n]+", " ", linkstring) # Remove newlines
   # the next 2 lines remove  spaces,
   #  allow user to put in spaces for readability.
