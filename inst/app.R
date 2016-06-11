@@ -54,7 +54,7 @@ server = function(input, output, session) {
     (returnVal)
   })
 
-  output$table = renderTable({
+  output$cmMatrix = renderTable({
     rValues$M = make.M()
   })
   output$effectMatrix = renderTable({
@@ -99,13 +99,17 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 }
 ui = fluidPage(
-  fluidRow(column(6, imageOutput("cmPlot"))
-           ,column(6, imageOutput("cemPlot"))
+  fluidRow(column(6, h2("Community matrix"),
+                  imageOutput("cmPlot"),
+                  tagAppendAttributes(style="font-size:200%",
+                                      tableOutput("cmMatrix")))
+           ,column(6, h2("Effect matrix"),
+                   imageOutput("cemPlot"),
+                   tagAppendAttributes(style="font-size:200%",
+                                       tableOutput("effectMatrix")))
   ),
-  fluidRow(column(6,  makeSliders()),
-           column(3, "Community matrix", tableOutput("table")),
-           column(3, "Effect matrix", tableOutput("effectMatrix"))
-  ),
+  tagAppendAttributes(style="border-width:10px", hr()),
+  fluidRow(column(offset = 2, 6,  makeSliders())),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
   plotOutput("plot")
 )
