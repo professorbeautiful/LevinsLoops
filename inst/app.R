@@ -61,14 +61,14 @@ server = function(input, output, session) {
     cat("effectMatrix\n")
     print(attr(rValues$result, "effectMatrix"))
   })
-output$predictedEq = renderTable({
-  cat("predictedEq:\n")
-  predictedEq = attr(rValues$result, "predictedEq")
-  predictedEq =  as.data.frame(as.list(predictedEq))
-  predictedEq = rbind(predictedEq, rValues$result)
-  rownames(predictedEq) = c("predicted equilibrium", 'final in simulation')
-  print(predictedEq)
-})
+  output$predictedEq = renderTable({
+    cat("predictedEq:\n")
+    predictedEq = attr(rValues$result, "predictedEq")
+    predictedEq =  as.data.frame(as.list(predictedEq))
+    predictedEq = rbind(predictedEq, rValues$result)
+    rownames(predictedEq) = c("predicted equilibrium", 'final in simulation')
+    print(predictedEq)
+  })
   output$plot = renderPlot({
     library(LevinsLoops)
     result = rValues$result =
@@ -80,18 +80,28 @@ output$predictedEq = renderTable({
   })
   output$cmPlot = renderImage({
     graph.cm(rValues$M, file="M.graphcm.dot")
-    M.graphcm.dot = readLines(file("M.graphcm.dot"))
-    #agopen(M.graphcm.dot)  ## TODO - how to export dot to svg.
-    #toFile()
-    outfile = "g1_twopi.svg"
-    #graph.cem(rValues$M, file="M.graphcem.dot")
+    system("dot -Tgif -O M.graphcm.dot",
+           ignore.stdout=TRUE, ignore.stderr = TRUE)
+    outfile = "M.graphcm.dot.gif"
     list(src = outfile,
-         alt = "This is alternate text")
-    }, deleteFile = FALSE)
-}
+         height=300, width=400,
+         alt = "CM should be here")
+  }, deleteFile = FALSE)
 
+  output$cemPlot = renderImage({
+    graph.cem(make.cem(rValues$M), file="M.graphcem.dot")
+    system("dot -Tgif -O M.graphcem.dot",
+           ignore.stdout=TRUE, ignore.stderr = TRUE)
+    outfile = "M.graphcem.dot.gif"
+    list(src = outfile,
+         height=300, width=400,
+         alt = "CEM should be here")
+  }, deleteFile = FALSE)
+}
 ui = fluidPage(
-  imageOutput("cmPlot"),
+  fluidRow(column(6, imageOutput("cmPlot"))
+           ,column(6, imageOutput("cemPlot"))
+  ),
   fluidRow(column(6,  makeSliders()),
            column(3, "Community matrix", tableOutput("table")),
            column(3, "Effect matrix", tableOutput("effectMatrix"))
