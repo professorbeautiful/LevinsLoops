@@ -78,9 +78,20 @@ output$predictedEq = renderTable({
       abline(h=previousResult, lty=2)
     previousResult <<- result
   })
+  output$cmPlot = renderImage({
+    graph.cm(rValues$M, file="M.graphcm.dot")
+    M.graphcm.dot = readLines(file("M.graphcm.dot"))
+    #agopen(M.graphcm.dot)  ## TODO - how to export dot to svg.
+    #toFile()
+    outfile = "g1_twopi.svg"
+    #graph.cem(rValues$M, file="M.graphcem.dot")
+    list(src = outfile,
+         alt = "This is alternate text")
+    }, deleteFile = FALSE)
 }
 
 ui = fluidPage(
+  imageOutput("cmPlot"),
   fluidRow(column(6,  makeSliders()),
            column(3, "Community matrix", tableOutput("table")),
            column(3, "Effect matrix", tableOutput("effectMatrix"))
