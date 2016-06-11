@@ -11,7 +11,7 @@
 #'        a -o a")
 #'  }
 
-#'stringToCM = function(linkstring="a->b a-oa b-oa") {
+stringToCM = function(linkstring="a->b a-oa b-oa") {
   linkstring = gsub("[ \n]+", " ", linkstring) # Remove newlines
   # the next 2 lines remove  spaces,
   #  allow user to put in spaces for readability.
@@ -92,7 +92,7 @@ E->D"
 #'
 CMtoIPMnet = function(cm) {
   N = nrow(cm)
-s  matstring =
+  matstring =
     paste0(collapse=',',
            sapply(1:nrow(cm),
                   function(rownum)
