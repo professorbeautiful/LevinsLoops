@@ -1,10 +1,9 @@
 library(LevinsLoops)
-
+library("LoopAnalyst")
 data("cm.levins", package="LoopAnalyst")
-nodeNames = rownames(cm.levins)
 
-makeSliders = function()  {
-  M = cm.levins
+makeSliders = function(M = cm.levins)  {
+  nodeNames = rownames(M)
   nameGrid = expand.grid(rownames(M), rownames(M), stringsAsFactors = FALSE)
   #print(nameGrid)
   returnVal = lapply(1:nrow(nameGrid),
@@ -56,7 +55,7 @@ server = function(input, output, session) {
   })
 
   output$table = renderTable({
-    make.M()
+    rValues$M = make.M()
   })
   output$effectMatrix = renderTable({
     cat("effectMatrix\n")
