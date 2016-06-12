@@ -12,6 +12,8 @@
 #'  }
 
 stringToCM = function(linkstring="a->b a-oa b-oa") {
+  theComment = gsub('.*#', "", linkstring)
+  linkstring = gsub('#.*', "", linkstring)   # remove comments
   linkstring = gsub("[ \n]+", " ", linkstring) # Remove newlines
   # the next 2 lines remove  spaces,
   #  allow user to put in spaces for readability.
@@ -41,6 +43,7 @@ stringToCM = function(linkstring="a->b a-oa b-oa") {
   to = from_to[2, ]
   for(link in 1:length(links))
     cm[to[link], from[link] ] = signs[link]
+  comment(cm) = theComment
   return (cm)
 }
 

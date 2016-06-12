@@ -1,11 +1,20 @@
 library(LevinsLoops)
 library("LoopAnalyst")
+library(shinyDebuggingPanel)
+
 data("cm.levins", package="LoopAnalyst")
 
-makeSliders = function(M = cm.levins)  {
-  nodeNames = rownames(M)
-  nameGrid = expand.grid(rownames(M), rownames(M), stringsAsFactors = FALSE)
-  #print(nameGrid)
+modelStringList = c(
+  'R o-> H H o-> x H o-> y y o-> y # Fig 2 Levins & Schultz 1996',
+  'a -o a     a o-> b  #Simple prey-predator',
+  'a -o a     a o-> b     b o-> c #two-level food chain'  ,
+  'a -o a     a o-> b     b o-> p1     b o-> p2      p1 o-o p2 #Two predators, positive feedback'
+
+)
+makeSliders = function(CM = cm.levins)  {
+  nodeNames = rownames(CM)
+  nameGrid = expand.grid(rownames(CM), rownames(CM),
+                         stringsAsFactors = FALSE)
   returnVal = lapply(1:nrow(nameGrid),
                      function(linkNum) {
                        nodes = unlist(nameGrid[linkNum, ])
@@ -14,7 +23,7 @@ makeSliders = function(M = cm.levins)  {
                        numericInput(inputId = nodeNameID(node_from, node_to),
                                     label = nodeNameLabel(node_from, node_to),
                                     min = -1.5, max = 1.5,
-                                    value = M[node_to, node_from],
+                                    value = CM[node_to, node_from],
                                     step = 0.01)
                      }
   )
@@ -28,58 +37,63 @@ makeSliders = function(M = cm.levins)  {
   returnVal
 }
 
-
 nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
 nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
 
 server = function(input, output, session) {
-  rValues = reactiveValues()
-  make.M = reactive({
-    #   if(!is.null(input$X1X1))
-    #     M = cbind(c(input$X1X1, input$X1X2),
-    #               c(input$X2X1, input$X2X2) )
-    #   else
-    M = cm.levins
-    Mtry = try({
+  thisSession <<- session
+  shinyDebuggingPanel::makeDebuggingPanelOutput(session)
+
+  rValues = reactiveValues(CM=cm.levins)
+
+  make.CM = reactive({
+    ### responds to the slider values.
+    nodeNames = rownames(rValues$CM)
+    CMtry = try({
       for(X1 in nodeNames)
         for(X2 in nodeNames)
-          M[X2,X1] = input[[nodeNameID(X1,X2)]]
+          rValues$CM[X2,X1] = input[[nodeNameID(X1,X2)]]
     })
-    print(M)
-    print(Mtry)
-    print(class(Mtry))
-    if(class(Mtry) == 'try-error'
-       | is.null(Mtry)) returnVal = M
-    else returnVal = Mtry
-    (returnVal)
+    print(rValues$CM)
+    print(CMtry)
+    print(class(CMtry))
+    if(class(CMtry) == 'try-error'
+       | is.null(CMtry))
+      returnVal = rValues$CM
+    else returnVal = rValues$CM = CMtry
+    return (returnVal)
   })
-
+  observe({
+    updateTextInput(session=session, inputId = "modelString",
+                    value = input$modelList)
+    rValues$comment = gsub(".*#", "", input$modelList)
+  })
   output$cmMatrix = renderTable({
-    rValues$M = make.M()
+    rValues$CM
   })
   output$effectMatrix = renderTable({
     cat("effectMatrix\n")
-    print(attr(rValues$result, "effectMatrix"))
+    print(attr(rValues$dynamSimResult, "effectMatrix"))
   })
   output$predictedEq = renderTable({
     cat("predictedEq:\n")
-    predictedEq = attr(rValues$result, "predictedEq")
+    predictedEq = attr(rValues$dynamSimResult, "predictedEq")
     predictedEq =  as.data.frame(as.list(predictedEq))
-    predictedEq = rbind(predictedEq, rValues$result)
+    predictedEq = rbind(predictedEq, rValues$dynamSimResult)
     rownames(predictedEq) = c("predicted equilibrium", 'final in simulation')
     print(predictedEq)
   })
   output$plot = renderPlot({
     library(LevinsLoops)
-    result = rValues$result =
-      dynamSim(M = make.M(), attachAttributes=TRUE, returnLast=TRUE)
-    abline(h=result)
-    if(exists("previousResult"))
-      abline(h=previousResult, lty=2)
-    previousResult <<- result
+    dynamSimResult = rValues$dynamSimResult =
+      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE)
+    abline(h=dynamSimResult)
+    if(exists("previousdynamSimResult"))
+      abline(h=previousdynamSimResult, lty=2)
+    previousdynamSimResult <<- dynamSimResult
   })
   output$cmPlot = renderImage({
-    graph.cm(rValues$M, file="M.graphcm.dot")
+    graph.cm(rValues$CM, file="M.graphcm.dot")
     system("dot -Tgif -O M.graphcm.dot",
            ignore.stdout=TRUE, ignore.stderr = TRUE)
     outfile = "M.graphcm.dot.gif"
@@ -89,7 +103,7 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   output$cemPlot = renderImage({
-    graph.cem(make.cem(rValues$M), file="M.graphcem.dot")
+    graph.cem(make.cem(rValues$CM), file="M.graphcem.dot")
     system("dot -Tgif -O M.graphcem.dot",
            ignore.stdout=TRUE, ignore.stderr = TRUE)
     outfile = "M.graphcem.dot.gif"
@@ -97,8 +111,29 @@ server = function(input, output, session) {
          height=300, width=400,
          alt = "CEM should be here")
   }, deleteFile = FALSE)
+
+  observe({
+    if(!is.null(input$loadModel))
+      if(input$loadModel > 0){
+        isolate(rValues$CM <- stringToCM(input$modelString))
+      }
+  })
+  output$comment = renderText({rValues$comment})
 }
+
 ui = fluidPage(
+  shinyDebuggingPanel::withDebuggingPanel(),
+  fluidRow(column(4, selectInput(inputId = "modelList", "some models",
+                                 modelStringList)),
+           column(6,
+                  textInput(inputId = "modelString",
+                            width="800px",
+                            label = "model string (either Pittsburgh-style or ipm-style)", value = ""
+                  )),
+           column(2, br(),
+                  actionButton("loadModel", "Load model")) ),
+  fluidRow(column(12, tagAppendAttributes
+                  (h2(textOutput("comment")), style="text-align:center"))),
   fluidRow(column(6, h2("Community matrix"),
                   imageOutput("cmPlot"),
                   tagAppendAttributes(style="font-size:200%",
@@ -111,7 +146,9 @@ ui = fluidPage(
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 2, 6,  makeSliders())),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
-  plotOutput("plot")
+  fluidRow(column(6, plotOutput("plot")),
+           column(6, "MOVING EQUILIBRIUM PLOT will go here" )
+  )
 )
 
 shinyApp(ui = ui, server = server)
