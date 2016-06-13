@@ -8,6 +8,8 @@ modelStringList = c(
   'R o-> H H o-> x H o-> y y o-> y # Fig 2 Levins & Schultz 1996',
   'a -o a     a o-> b  #Simple prey-predator',
   'a -o a     a o-> b     b o-> c #two-level food chain'  ,
+  'a -o a     a o-> b     b o-> c c o-> d #three-level food chain'  ,
+  'a -o a     a o-> b     b o-> c c o-> d d o-> e # four-level food chain'  ,
   'a -o a     a o-> b     b o-> p1     b o-> p2      p1 o-o p2 #Two predators, positive feedback'
 
 )
