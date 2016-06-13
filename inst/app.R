@@ -5,14 +5,17 @@ library(shinyDebuggingPanel)
 data("cm.levins", package="LoopAnalyst")
 
 modelStringList = c(
-  'R o-> H H o-> x H o-> y y o-> y # Fig 2 Levins & Schultz 1996',
-  'a -o a     a o-> b  #Simple prey-predator',
-  'a -o a     a o-> b     b o-> c #two-level food chain'  ,
-  'a -o a     a o-> b     b o-> c c o-> d #three-level food chain'  ,
-  'a -o a     a o-> b     b o-> c c o-> d d o-> e # four-level food chain'  ,
-  'a -o a     a o-> b     b o-> p1     b o-> p2      p1 o-o p2 #Two predators, positive feedback'
-
+  'R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
+   'a -( a     a )-> b  #Simple prey-predator',
+   'a -( a     a )-> b     b )-> c #two-level food chain',
+   'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
+   'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
+  'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback'
 )
+
+nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
+nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
+
 makeSliders = function(CM = cm.levins)  {
   nodeNames = rownames(CM)
   nameGrid = expand.grid(rownames(CM), rownames(CM),
@@ -39,14 +42,13 @@ makeSliders = function(CM = cm.levins)  {
   returnVal
 }
 
-nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
-nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
-
 server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
   rValues = reactiveValues(CM=cm.levins)
+
+
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -71,11 +73,11 @@ server = function(input, output, session) {
     rValues$comment = gsub(".*#", "", input$modelList)
   })
   output$cmMatrix = renderTable({
-    rValues$CM
+    out.cm(rValues$CM)
   })
   output$effectMatrix = renderTable({
     cat("effectMatrix\n")
-    print(attr(rValues$dynamSimResult, "effectMatrix"))
+    print(out.cm(t(attr(rValues$dynamSimResult, "effectMatrix"))))
   })
   output$predictedEq = renderTable({
     cat("predictedEq:\n")
@@ -105,7 +107,9 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   output$cemPlot = renderImage({
-    graph.cem(make.cem(rValues$CM), file="M.graphcem.dot")
+    CEM = make.cem(rValues$CM)
+    CEM = t(CEM) ### Correction
+    graph.cem(CEM, file="M.graphcem.dot")
     system("dot -Tgif -O M.graphcem.dot",
            ignore.stdout=TRUE, ignore.stderr = TRUE)
     outfile = "M.graphcem.dot.gif"

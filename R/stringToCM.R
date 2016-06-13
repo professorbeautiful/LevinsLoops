@@ -2,41 +2,41 @@
 #'
 #'Conversion from a loop string to a community matrix.
 #'
-#' @param linkstring String of links separated by spaces and/or newlines. Each link connects two nodenames with "->" "o->" etc.
+#' @param linkstring String of links separated by spaces and/or newlines. Each link connects two nodenames with "->" ")->" etc.
 #' @return An NxN community matrix, where N=# distinct nodes.
 #' @examples{
 #' stringToCM(
-#'    "a o-> b
-#'     b o-> c
-#'        a -o a")
+#'    "a )-> b
+#'     b )-> c
+#'        a -( a")
 #'  }
 
-stringToCM = function(linkstring="a->b a-oa b-oa") {
+stringToCM = function(linkstring="a->b a-(a b-(a") {
   theComment = gsub('.*#', "", linkstring)
   linkstring = gsub('#.*', "", linkstring)   # remove comments
   linkstring = gsub("[ \n]+", " ", linkstring) # Remove newlines
   # the next 2 lines remove  spaces,
   #  allow user to put in spaces for readability.
-  linkstring = gsub(" *([o<]*-[o>]*) *", "\\1", linkstring)
-  #Now, handle the "o->" and "<-o" cases:
+  linkstring = gsub(" *([)<]*-[(>]*) *", "\\1", linkstring)
+  #Now, handle the ")->" and "<-(" cases:
   links  = strsplit(x = linkstring, split = "[ \n]")[[1]]
-  is_two_way = grep(pattern = "[o<]-[o>]", links)
+  is_two_way = grep(pattern = "[)<]-[(>]", links)
   if(length(is_two_way) > 0) {
     # replace each two-way link element by the two links it represents.
-    links = c(links, sub("[o<]-", "-", links[is_two_way]))
-    links = c(links, sub("-[o>]", "-", links[is_two_way]))
+    links = c(links, sub("[)<]-", "-", links[is_two_way]))
+    links = c(links, sub("-[(>]", "-", links[is_two_way]))
     # Remove these link elements
     links = links[-is_two_way]
   }
-  linknodes <- strsplit(links, "[<o]*-[>o]*")
-  names = unique(unlist(strsplit(links, "->|-o|<-|o-")))
+  linknodes <- strsplit(links, "[<)]*-[>()]*")
+  names = unique(unlist(strsplit(links, "->|-(|<-|)-")))
   n = length(names)
   cm = matrix(rep(0,n^2), nrow=n, dimnames=list(names,names))
   signs = rep(-1, length(links))
   signs[grep("->|<-", links)] = 1
   from_to = as.matrix(as.data.frame(linknodes, stringsAsFactors=FALSE))
   ## Reverse any pointing left instead of right.
-  backwards = (regexpr("[o<]-", links) > -1)
+  backwards = (regexpr("[)<]-", links) > -1)
   if(any(backwards))
     from_to[ , backwards] = apply(from_to[ , backwards, drop=F], 2, rev)
   from = from_to[1, ]
@@ -50,33 +50,33 @@ stringToCM = function(linkstring="a->b a-oa b-oa") {
 
 stringToCM(
 "a->b
-a-oa
-b-oa")
+a-(a
+b-(a")
 stringToCM(
-  "ao->b
-b o-> c
-  a-oa")
+  "a)->b
+b )-> c
+  a-(a")
 
 RHxy =
-"R-oR
+"R-(R
 R->H
-H-oR
+H-(R
 H->x
-x-oH
+x-(H
 H->y
-y-oH
-y-oy"
+y-(H
+y-(y"
 
 stringToCM(RHxy)
 
 ABCDE=
-"A-oA
+"A-(A
 A->B
-B-oA
+B-(A
 B->C
-C-oB
+C-(B
 C->D
-D-oC
+D-(C
 D->E
 E->D"
 
