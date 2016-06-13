@@ -4,7 +4,7 @@ Title: Building dynamic simulation for Levins loop models.
 Version: 0.2
 Date: 2016-06-12
 Author: Roger Day
-Maintainer: day01@pitt.edu
+Maintainer: Roger Day <day01@pitt.edu>
 Description: Demonstrate moving equilibria
 License: GPL-2
 Requires: LoopAnalyst
