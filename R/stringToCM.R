@@ -86,7 +86,8 @@ E->D"
 #'
 #' @param cm A community matrix
 #' @return A string suitable for ipmnet.org/loop
-#' @example {
+#' @examples {
+#' ABCDE = "A -(A A)->B B)->C C )->D D )->E"
 #' CMtoIPMnet(stringToCM(ABCDE))
 #' ### At ipmnet, generate the predictions. Then compare to LoopAnalyst:
 #' library("LoopAnalyst")
