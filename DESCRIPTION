@@ -8,5 +8,7 @@ Maintainer: Roger Day <day01@pitt.edu>
 Description: Demonstrate moving equilibria
 License: GPL-2
 Requires: LoopAnalyst
-Suggests: shinyDebuggingPanel
+Suggests:
+    shinyDebuggingPanel
 LazyData: TRUE
+RoxygenNote: 5.0.1
