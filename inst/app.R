@@ -16,39 +16,12 @@ modelStringList = c(
 nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
 nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
 
-makeSliders = function(CM = cm.levins)  {
-  nodeNames = rownames(CM)
-  nameGrid = expand.grid(rownames(CM), rownames(CM),
-                         stringsAsFactors = FALSE)
-  returnVal = lapply(1:nrow(nameGrid),
-                     function(linkNum) {
-                       nodes = unlist(nameGrid[linkNum, ])
-                       node_to = nodes[1]
-                       node_from = nodes[2]
-                       numericInput(inputId = nodeNameID(node_from, node_to),
-                                    label = nodeNameLabel(node_from, node_to),
-                                    min = -1.5, max = 1.5,
-                                    value = CM[node_to, node_from],
-                                    step = 0.01)
-                     }
-  )
-  returnVal = lapply(
-    split(1:length(returnVal),
-          1 + (-1 + 1:length(returnVal)) %% length(nodeNames)
-    ),
-    function(sliders) fluidRow(
-      lapply(returnVal[sliders], column, width=3)
-    ))  #shiny::tagAppendAttributes()
-  returnVal
-}
 
 server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
   rValues = reactiveValues(CM=cm.levins)
-
-
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -79,6 +52,33 @@ server = function(input, output, session) {
     cat("effectMatrix\n")
     print(out.cm(t(attr(rValues$dynamSimResult, "effectMatrix"))))
   })
+  output$sliders = renderUI( {
+    CM = rValues$CM
+    nodeNames = rownames(CM)
+    nameGrid = expand.grid(rownames(CM), rownames(CM),
+                           stringsAsFactors = FALSE)
+    returnVal = lapply(1:nrow(nameGrid),
+                       function(linkNum) {
+                         nodes = unlist(nameGrid[linkNum, ])
+                         node_to = nodes[1]
+                         node_from = nodes[2]
+                         numericInput(inputId = nodeNameID(node_from, node_to),
+                                      label = nodeNameLabel(node_from, node_to),
+                                      min = -1.5, max = 1.5,
+                                      value = CM[node_to, node_from],
+                                      step = 0.01)
+                       }
+    )
+    returnVal = lapply(
+      split(1:length(returnVal),
+            1 + (-1 + 1:length(returnVal)) %% length(nodeNames)
+      ),
+      function(sliders) fluidRow(
+        lapply(returnVal[sliders], column, width=3)
+      ))  #shiny::tagAppendAttributes()
+    returnVal
+  })
+
   output$predictedEq = renderTable({
     cat("predictedEq:\n")
     predictedEq = attr(rValues$dynamSimResult, "predictedEq")
@@ -150,7 +150,7 @@ ui = fluidPage(
                                        tableOutput("effectMatrix")))
   ),
   tagAppendAttributes(style="border-width:10px", hr()),
-  fluidRow(column(offset = 2, 6,  makeSliders())),
+  fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
   fluidRow(column(6, plotOutput("plot")),
            column(6, "MOVING EQUILIBRIUM PLOT will go here" )
