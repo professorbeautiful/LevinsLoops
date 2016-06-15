@@ -44,7 +44,13 @@ server = function(input, output, session) {
     updateTextInput(session=session, inputId = "modelString",
                     value = input$modelList)
     rValues$comment = gsub(".*#", "", input$modelList)
+
   })
+  observe({
+    updateTextInput(session = session,inputId = "IpmnetString",
+                    value = try(CMtoIPMnet(stringToCM(input$modelString))))
+  })
+
   output$cmMatrix = renderTable({
     out.cm(rValues$CM)
   })
@@ -139,8 +145,15 @@ ui = fluidPage(
                             width="800px",
                             label = "model string (either Pittsburgh-style or ipm-style)", value = ""
                   )),
+           column(6,
+                  textInput(inputId = "IpmnetString",
+                            width="800px",
+                            label = "Ipm", value = ""
+                  )),
+
            column(2, br(),
-                  actionButton("loadModel", "Load model")) ),
+                  actionButton("loadModel", "Load model"))),
+
   fluidRow(column(12, tagAppendAttributes
                   (h2(textOutput("comment")), style="text-align:center"))),
   fluidRow(column(6, h2("Community matrix"),
