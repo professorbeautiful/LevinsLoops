@@ -21,11 +21,11 @@ server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins)
+  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins)
 
   make.CM = reactive({
     ### responds to the slider values.
-    nodeNames = rownames(rValues$CM)
+    nodeNames = rownames(rValues$CM_qual)
     CMtry = try({
       for(X1 in nodeNames)
         for(X2 in nodeNames)
@@ -52,14 +52,14 @@ server = function(input, output, session) {
   })
 
   output$cmMatrix = renderTable({
-    out.cm(rValues$CM)
+    try_out = try(out.cm(rValues$CM_qual))
   })
   output$effectMatrix = renderTable({
     cat("effectMatrix\n")
     print(out.cm(t(attr(rValues$dynamSimResult, "effectMatrix"))))
   })
   output$sliders = renderUI( {
-    CM = rValues$CM
+    CM = rValues$CM_qual
     nodeNames = rownames(CM)
     nameGrid = expand.grid(rownames(CM), rownames(CM),
                            stringsAsFactors = FALSE)
@@ -96,14 +96,14 @@ server = function(input, output, session) {
   output$plot = renderPlot({
     library(LevinsLoops)
     dynamSimResult = rValues$dynamSimResult =
-      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE)
+      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE,noNeg = input$noNeg)
     abline(h=dynamSimResult)
     if(exists("previousdynamSimResult"))
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
   output$cmPlot = renderImage({
-    graph.cm(rValues$CM, file="M.graphcm.dot")
+    graph.cm(rValues$CM_qual, file="M.graphcm.dot")
     ### Replace the "odot" circle for negative link by "tee" or "odiamond" or "invempty"
     system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
     system("dot -Tgif -O M.graphcm.fixed.dot",
@@ -115,7 +115,7 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   output$cemPlot = renderImage({
-    CEM = make.cem(rValues$CM)
+    CEM = make.cem(rValues$CM_qual)
     CEM = t(CEM) ### Correction
     graph.cem(CEM, file="M.graphcem.dot")
     system("sed s/odot/invempty/ > M.graphcem.fixed.dot < M.graphcem.dot")
@@ -130,7 +130,7 @@ server = function(input, output, session) {
   observe({
     if(!is.null(input$loadModel))
       if(input$loadModel > 0){
-        isolate(rValues$CM <- stringToCM(input$modelString))
+        isolate(rValues$CM <-rValues$CM_qual <- stringToCM(input$modelString))
       }
   })
   output$comment = renderText({rValues$comment})
@@ -168,6 +168,7 @@ ui = fluidPage(
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
+  checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
   fluidRow(column(6, plotOutput("plot")),
            column(6, "MOVING EQUILIBRIUM PLOT will go here" )
   )
