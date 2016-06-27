@@ -96,7 +96,7 @@ server = function(input, output, session) {
   output$plot = renderPlot({
     library(LevinsLoops)
     dynamSimResult = rValues$dynamSimResult =
-      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE,noNeg = input$noNeg)
+      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE,noNeg = input$noNeg, Tmax = input$Tmax)
     abline(h=dynamSimResult)
     if(exists("previousdynamSimResult"))
       abline(h=previousdynamSimResult, lty=2)
@@ -169,6 +169,7 @@ ui = fluidPage(
   fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
   checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
+  numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
   fluidRow(column(6, plotOutput("plot")),
            column(6, "MOVING EQUILIBRIUM PLOT will go here" )
   )
