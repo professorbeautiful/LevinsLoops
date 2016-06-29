@@ -13,7 +13,7 @@ modelStringList = c(
   'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback'
 )
 
-nodeNameID = function(n1, n2) paste0("Input", n1, n2, sep="_")
+nodeNameID = function(n1, n2) paste("Input", n1, n2, sep="_")
 nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
 
 
@@ -60,7 +60,7 @@ server = function(input, output, session) {
   })
   output$sliders = renderUI( {
     CM = rValues$CM_qual
-    nodeNames = rownames(CM)
+    rValues$nodeNames = nodeNames = rownames(CM)
     nameGrid = expand.grid(rownames(CM), rownames(CM),
                            stringsAsFactors = FALSE)
     returnVal = lapply(1:nrow(nameGrid),
@@ -126,6 +126,10 @@ server = function(input, output, session) {
          height=300, width=400,
          alt = "CEM should be here")
   }, deleteFile = FALSE)
+  observe({
+    parameter_names = nodeNameLabel(rValues$nodeNames, rValues$nodeNames)
+    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_names)
+  })
 
   observe({
     if(!is.null(input$loadModel))
@@ -168,10 +172,14 @@ ui = fluidPage(
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
   fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
-  checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
-  numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
-  fluidRow(column(6, plotOutput("plot")),
-           column(6, "MOVING EQUILIBRIUM PLOT will go here" )
+  fluidRow(column(6, h2("Dynamic"), numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
+                  checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
+                  plotOutput("plot")),
+           column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
+                  selectInput(inputId = "Parameter",label = "Parameter to Change", choices = ""),
+                  numericInput(inputId = "Endpoint", label = "endpoint", min = 1 , step = 1)
+                  )
+
   )
 )
 
