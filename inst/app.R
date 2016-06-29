@@ -127,8 +127,10 @@ server = function(input, output, session) {
          alt = "CEM should be here")
   }, deleteFile = FALSE)
   observe({
-    parameter_names = nodeNameLabel(rValues$nodeNames, rValues$nodeNames)
-    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_names)
+    parameter_name = nodeNameLabel(rValues$nodeNames, rValues$nodeNames)
+    numeric_values = nodeNameID(rValues$nodeNames, rValues$nodeNames)
+    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_name)
+    updateNumericInput(session = session , inputId ="Endpoint", value = numeric_values )
   })
 
   observe({
@@ -176,9 +178,9 @@ ui = fluidPage(
                   checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
-                  selectInput(inputId = "Parameter",label = "Parameter to Change", choices = ""),
-                  numericInput(inputId = "Endpoint", label = "endpoint", min = 1 , step = 1)
-                  )
+                  selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K"),
+                  numericInput(inputId = "Endpoint", label = "endpoint", min = -2 ,max = 2, step = 0.1, value = 0)
+           )
 
   )
 )
