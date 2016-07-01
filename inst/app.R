@@ -21,7 +21,8 @@ server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins)
+  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
+                           constants=c(1000,0,0,0))
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -38,6 +39,10 @@ server = function(input, output, session) {
        | is.null(CMtry))
       returnVal = rValues$CM
     else returnVal = rValues$CM = CMtry
+    nSpecies = length(nodeNames)
+    death = 0
+    rValues$constants = c(1000,  rep(death, nSpecies-1))
+
     return (returnVal)
   })
   observe({
@@ -61,7 +66,7 @@ server = function(input, output, session) {
   output$sliders = renderUI( {
     CM = rValues$CM_qual
     rValues$nodeNames = nodeNames = rownames(CM)
-    nameGrid = expand.grid(rownames(CM), rownames(CM),
+    rValues$nameGrid = nameGrid = expand.grid(rownames(CM), rownames(CM),
                            stringsAsFactors = FALSE)
     returnVal = lapply(1:nrow(nameGrid),
                        function(linkNum) {
@@ -102,6 +107,8 @@ server = function(input, output, session) {
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
+
+
   output$cmPlot = renderImage({
     graph.cm(rValues$CM_qual, file="M.graphcm.dot")
     ### Replace the "odot" circle for negative link by "tee" or "odiamond" or "invempty"
@@ -113,6 +120,20 @@ server = function(input, output, session) {
          height=300, width=400,
          alt = "CM should be here")
   }, deleteFile = FALSE)
+
+
+  output$movingEqPlot = renderPlot({
+    browser(text = "movingEqPlot")
+    end_start = input$end_start
+    start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
+    end = start + end_start
+  movingEqPlot(rValues$CM,
+                 initial = solve(rValues$CM, -rValues$constants),
+                 paramToChange = input$Parameter,
+                 constants = rValues$constants,
+                 start = start,
+                 end = end)
+  })
 
   output$cemPlot = renderImage({
     CEM = make.cem(rValues$CM_qual)
@@ -127,10 +148,8 @@ server = function(input, output, session) {
          alt = "CEM should be here")
   }, deleteFile = FALSE)
   observe({
-    parameter_name = nodeNameLabel(rValues$nodeNames, rValues$nodeNames)
-    numeric_values = nodeNameID(rValues$nodeNames, rValues$nodeNames)
-    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_name)
-    updateNumericInput(session = session , inputId ="Endpoint", value = numeric_values )
+    parameter_names = nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
+    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_names)
   })
 
   observe({
@@ -179,8 +198,9 @@ ui = fluidPage(
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
                   selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K"),
-                  numericInput(inputId = "Endpoint", label = "endpoint", min = -2 ,max = 2, step = 0.1, value = 0)
-           )
+                  numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1),
+                  plotOutput("movingEqPlot")
+  )
 
   )
 )
