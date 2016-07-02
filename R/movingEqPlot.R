@@ -40,6 +40,7 @@ movingEqPlot = function(CM,
     timeline = seq(start,end, length=nPoints)
     plot(timeline, trajectory[ , 1], pch="",
          ylim = range(c(trajectory)),
+         xlab=paramToChange,
          ylab="trajectories",
          main="Moving Equilibria")
     for(species in 1:nSpecies)
