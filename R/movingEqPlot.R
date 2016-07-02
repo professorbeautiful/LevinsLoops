@@ -1,5 +1,5 @@
 movingEqPlot = function(CM,
-                    initial,
+                    initial=rValues$predictedEq,
                     paramToChange,
                     start,
                     end,

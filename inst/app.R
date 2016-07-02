@@ -40,9 +40,9 @@ server = function(input, output, session) {
       returnVal = rValues$CM
     else returnVal = rValues$CM = CMtry
     nSpecies = length(nodeNames)
-    death = 0
+    death = (-100)
     rValues$constants = c(1000,  rep(death, nSpecies-1))
-
+    rValues$initial = c(1000,  rep(1, nSpecies-1))
     return (returnVal)
   })
   observe({
@@ -90,18 +90,22 @@ server = function(input, output, session) {
     returnVal
   })
 
-  output$predictedEq = renderTable({
+  output$equilibriumTable = renderTable({
     cat("predictedEq:\n")
-    predictedEq = attr(rValues$dynamSimResult, "predictedEq")
-    predictedEq =  as.data.frame(as.list(predictedEq))
-    predictedEq = rbind(predictedEq, rValues$dynamSimResult)
-    rownames(predictedEq) = c("predicted equilibrium", 'final in simulation')
-    print(predictedEq)
+    predictedEq = rValues$predictedEq = attr(rValues$dynamSimResult, "predictedEq")
+    equilibriumTable =  as.data.frame(as.list(predictedEq))
+    equilibriumTable = rbind(equilibriumTable, rValues$dynamSimResult)
+    rownames(equilibriumTable) = c("predicted equilibrium", 'final in simulation')
+    print(equilibriumTable)
   })
   output$plot = renderPlot({
     library(LevinsLoops)
     dynamSimResult = rValues$dynamSimResult =
-      dynamSim(M = make.CM(), attachAttributes=TRUE, returnLast=TRUE,noNeg = input$noNeg, Tmax = input$Tmax)
+      dynamSim(M = make.CM(),
+               constants=rValues$constants,
+               #initial=rValues$initial,
+               attachAttributes=TRUE, returnLast=TRUE,
+               noNeg = input$noNeg, Tmax = input$Tmax)
     abline(h=dynamSimResult)
     if(exists("previousdynamSimResult"))
       abline(h=previousdynamSimResult, lty=2)
@@ -123,7 +127,7 @@ server = function(input, output, session) {
 
 
   output$movingEqPlot = renderPlot({
-    browser(text = "movingEqPlot")
+    #browser(text = "movingEqPlot")
     end_start = input$end_start
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
@@ -192,16 +196,19 @@ ui = fluidPage(
   ),
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
-  fluidRow(column(3, ""), column(4, tableOutput("predictedEq"))),
-  fluidRow(column(6, h2("Dynamic"), numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
-                  checkboxInput("noNeg","negatives disallowed?", value = TRUE ),
+  fluidRow(column(3, ""), column(4, tableOutput("equilibriumTable"))),
+  fluidRow(column(6, h2("Dynamic"),
+                  fluidRow(
+                    numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
+                    checkboxInput("noNeg","negatives disallowed?", value = TRUE )),
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
-                  selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K"),
-                  numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1),
+                  fluidRow(
+                    column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K")),
+                    column(6, numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1))
+                  ),
                   plotOutput("movingEqPlot")
-  )
-
+           )
   )
 )
 
