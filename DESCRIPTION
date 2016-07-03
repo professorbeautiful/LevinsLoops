@@ -1,13 +1,13 @@
 Package: LevinsLoops
 Type: Package
 Title: Building dynamic simulation for Levins loop models.
-Version: 0.2
-Date: 2016-06-12
-Author: Roger Day
+Version: 0.3
+Date: 2016-07-02
+Author: Roger Day and Azi Washington
 Maintainer: Roger Day <day01@pitt.edu>
 Description: Demonstrate moving equilibria
 License: GPL-2
-Requires: LoopAnalyst
+Requires: LoopAnalyst, plotrix
 Suggests:
     shinyDebuggingPanel
 LazyData: TRUE
