@@ -103,7 +103,7 @@ server = function(input, output, session) {
     dynamSimResult = rValues$dynamSimResult =
       dynamSim(M = make.CM(),
                constants=rValues$constants,
-               #initial=rValues$initial,
+               initial=rValues$initial,
                attachAttributes=TRUE, returnLast=TRUE,
                noNeg = input$noNeg, Tmax = input$Tmax)
     abline(h=dynamSimResult)
