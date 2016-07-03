@@ -15,7 +15,7 @@ dynamSim = function(M,
   nSpecies = nrow(M)
   if(is.null(rownames(M))) rownames(M) = 1:nSpecies
   if(is.null(colnames(M))) colnames(M) = 1:nSpecies
-  if(missing(initial)) {
+  if(missing(initial) | is.null(initial)) {
     initial = c(1000, rep(1, nSpecies-1))
     names(initial) = rownames(M)
   }
