@@ -132,7 +132,6 @@ server = function(input, output, session) {
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
   movingEqPlot(rValues$CM,
-                 initial = solve(rValues$CM, -rValues$constants),
                  paramToChange = input$Parameter,
                  constants = rValues$constants,
                  start = start,
