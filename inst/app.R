@@ -21,8 +21,8 @@ server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
-                           constants=c(1000,0,0,0))
+  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins
+                          )
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -41,8 +41,11 @@ server = function(input, output, session) {
     else returnVal = rValues$CM = CMtry
     nSpecies = length(nodeNames)
     death = (-100)
-    rValues$constants = c(1000,  rep(death, nSpecies-1))
-    rValues$initial = c(1000,  rep(1, nSpecies-1))
+    if (is.null(rValues$initial) | length(rValues$initial) != nSpecies){
+
+      rValues$constants = c(1000,  rep(death, nSpecies-1))
+      rValues$initial = c(1000,  rep(1, nSpecies-1))
+    }
     return (returnVal)
   })
   observe({
@@ -103,13 +106,18 @@ server = function(input, output, session) {
     dynamSimResult = rValues$dynamSimResult =
       dynamSim(M = make.CM(),
                constants=rValues$constants,
-               #initial=rValues$initial,
+               initial=rValues$initial,
                attachAttributes=TRUE, returnLast=TRUE,
                noNeg = input$noNeg, Tmax = input$Tmax)
     abline(h=dynamSimResult)
     if(exists("previousdynamSimResult"))
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
+  })
+
+  observe({
+    input$loadEqulibrium
+    isolate(rValues$initial <- rValues$predictedEq)
   })
 
 
@@ -201,6 +209,7 @@ ui = fluidPage(
                   fluidRow(
                     numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
                     checkboxInput("noNeg","negatives disallowed?", value = TRUE )),
+                    actionButton("loadEqulibrium", "Load Equilibirums as Starting Value"),
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
                   fluidRow(
