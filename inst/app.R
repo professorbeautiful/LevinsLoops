@@ -10,7 +10,8 @@ modelStringList = c(
    'a -( a     a )-> b     b )-> c #two-level food chain',
    'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
    'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
-  'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback'
+  'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback',
+  'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A '
 )
 
 nodeNameID = function(n1, n2) paste("Input", n1, n2, sep="_")
@@ -140,7 +141,6 @@ server = function(input, output, session) {
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
   movingEqPlot(rValues$CM,
-                 initial = solve(rValues$CM, -rValues$constants),
                  paramToChange = input$Parameter,
                  constants = rValues$constants,
                  start = start,
