@@ -6,10 +6,10 @@ data("cm.levins", package="LoopAnalyst")
 
 modelStringList = c(
   'R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
-   'a -( a     a )-> b  #Simple prey-predator',
-   'a -( a     a )-> b     b )-> c #two-level food chain',
-   'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
-   'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
+  'a -( a     a )-> b  #Simple prey-predator',
+  'a -( a     a )-> b     b )-> c #two-level food chain',
+  'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
+  'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
   'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback',
   'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A '
 )
@@ -23,7 +23,7 @@ server = function(input, output, session) {
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
   rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins
-                          )
+  )
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -71,7 +71,7 @@ server = function(input, output, session) {
     CM = rValues$CM_qual
     rValues$nodeNames = nodeNames = rownames(CM)
     rValues$nameGrid = nameGrid = expand.grid(rownames(CM), rownames(CM),
-                           stringsAsFactors = FALSE)
+                                              stringsAsFactors = FALSE)
     returnVal = lapply(1:nrow(nameGrid),
                        function(linkNum) {
                          nodes = unlist(nameGrid[linkNum, ])
@@ -140,7 +140,7 @@ server = function(input, output, session) {
     end_start = input$end_start
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
-  movingEqPlot(rValues$CM,
+    movingEqPlot(rValues$CM,
                  paramToChange = input$Parameter,
                  constants = rValues$constants,
                  start = start,
