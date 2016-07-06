@@ -68,11 +68,13 @@ movingEqPlot = function(CM,
   legend("left", rownames(M),
          text.col=1:nSpecies, horiz = FALSE)
   library(plotrix)
-  addtable2plot(display.rownames = TRUE,
+  try(
+    addtable2plot(display.rownames = TRUE,
                 start+(end-start)*0.1,
                 mean(c(min(trajectory), max(trajectory))),
                 changes,
                 xpad=1, ypad=1)
+  )
   return(changes)
 }
 
