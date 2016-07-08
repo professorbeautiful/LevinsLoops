@@ -184,6 +184,8 @@ server = function(input, output, session) {
 
 ui = fluidPage(
   shinyDebuggingPanel::withDebuggingPanel(),
+  h1(style="font-color:black; text-align:center", "Dynamic Model Explorer"),
+  hr(),
   fluidRow(column(4, selectInput(inputId = "modelList", "some models",
                                  modelStringList)),
            column(6,
