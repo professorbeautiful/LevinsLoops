@@ -115,11 +115,16 @@ server = function(input, output, session) {
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
-
   observe({
-    input$loadEqulibrium
-    isolate(rValues$initial <- rValues$predictedEq)
+    if(input$loadEquilibrium){
+      isolate(rValues$initial <- rValues$predictedEq)
+    }
+    if(input$loadDefault){
+      nSpecies = nrow(rValues$CM_qual)
+      isolate(rValues$initial <- c(1000,  rep(1, nSpecies-1)))
+    }
   })
+
 
 
   output$cmPlot = renderImage({
@@ -209,7 +214,9 @@ ui = fluidPage(
                   fluidRow(
                     numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
                     checkboxInput("noNeg","negatives disallowed?", value = TRUE )),
-                    actionButton("loadEqulibrium", "Load Equilibirums as Starting Value"),
+                  "Starting Value: ",
+                  actionButton("loadEquilibrium", "Load Equilibrium"),
+                  actionButton("loadDefault", "Load Default Values"),
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
                   fluidRow(
