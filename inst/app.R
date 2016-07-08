@@ -115,10 +115,14 @@ server = function(input, output, session) {
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
+
+
   observe({
     if(input$loadEquilibrium){
       isolate(rValues$initial <- rValues$predictedEq)
     }
+  })
+  observe({
     if(input$loadDefault){
       nSpecies = nrow(rValues$CM_qual)
       isolate(rValues$initial <- c(1000,  rep(1, nSpecies-1)))
