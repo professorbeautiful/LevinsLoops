@@ -5,7 +5,7 @@ library(shinyDebuggingPanel)
 data("cm.levins", package="LoopAnalyst")
 
 modelStringList = c(
-  'R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
+  'R -(R R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
    'a -( a     a )-> b  #Simple prey-predator',
    'a -( a     a )-> b     b )-> c #two-level food chain',
    'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
@@ -115,10 +115,14 @@ server = function(input, output, session) {
       abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
+
+
   observe({
     if(input$loadEquilibrium){
       isolate(rValues$initial <- rValues$predictedEq)
     }
+  })
+  observe({
     if(input$loadDefault){
       nSpecies = nrow(rValues$CM_qual)
       isolate(rValues$initial <- c(1000,  rep(1, nSpecies-1)))
