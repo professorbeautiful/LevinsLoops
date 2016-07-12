@@ -49,13 +49,38 @@ server = function(input, output, session) {
     }
     return (returnVal)
   })
-  observe({
+  observe(priority = 2, {
     updateTextInput(session=session, inputId = "modelString",
-                    value = input$modelList)
-    rValues$comment = gsub(".*#", "", input$modelList)
-
+                    value = input$modelList,
+                    label = paste("Selected model string ",
+                                  gsub(".*#", "", input$modelList)))
   })
-  observe({
+  observe(priority = 1, {
+    input$modelString ## Reactivity only to input$modelString
+    isolate({
+      rValues$comment = gsub(".*#", "", input$modelList)
+      rValues$modelStringModified <-
+        !identical(input$modelString, input$modelList)
+      updateTextInput(session=session, inputId = "modelString",
+                      label =HTML(
+                        ifelse(rValues$modelStringModified,
+                               "Modified model string",
+                               paste("Selected model string (",
+                                     rValues$comment, ")") )
+                        )
+      )
+      if(!is.null(input$modelString) & input$modelString != "") {
+        tryResult = try( {
+          stringToCM(input$modelString)
+        })
+        if(class(tryResult) != 'try-error')
+          rValues$CM <-rValues$CM_qual <- tryResult
+        else cat("Error in stringToCM:  ", tryResult, "\n")
+      }
+    })
+  })
+
+observe({
     updateTextInput(session = session,inputId = "IpmnetString",
                     value = try(CMtoIPMnet(stringToCM(input$modelString))))
   })
@@ -197,13 +222,14 @@ ui = fluidPage(
                   textInput(inputId = "IpmnetString",
                             width="800px",
                             label = "Ipm", value = ""
-                  )),
+                  ))
+           # ,
+           # column(2, br(),
+           #        actionButton("loadModel", "Load model"))
+           ),
 
-           column(2, br(),
-                  actionButton("loadModel", "Load model"))),
-
-  fluidRow(column(12, tagAppendAttributes
-                  (h2(textOutput("comment")), style="text-align:center"))),
+  # fluidRow(column(12, tagAppendAttributes
+  #                 (h2(textOutput("comment")), style="text-align:center"))),
   fluidRow(column(6, h2("Community matrix"),
                   imageOutput("cmPlot"),
                   tagAppendAttributes(style="font-size:200%",

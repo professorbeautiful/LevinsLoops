@@ -1,7 +1,7 @@
 Package: LevinsLoops
 Type: Package
 Title: Building dynamic simulation for Levins loop models.
-Version: 0.35
+Version: 0.36
 Date: 2016-07-12
 Author: Roger Day and Azim Washington
 Maintainer: Roger Day <day01@pitt.edu>
