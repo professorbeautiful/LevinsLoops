@@ -11,7 +11,8 @@ modelStringList = c(
   'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
   'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
   'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback',
-  'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A '
+  'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A ',
+  'Qout-(Qout    Pressure-( Pressure    Depth-> Pressure  Pressure ->Qout  Qout-(Depth  ### Denver Dash bathtub'
 )
 
 nodeNameID = function(n1, n2) paste("Input", n1, n2, sep="_")
