@@ -22,7 +22,8 @@ server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins
+  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
+                           movingEqPlotFreeze = FALSE
   )
 
   make.CM = reactive({
@@ -145,15 +146,36 @@ server = function(input, output, session) {
 
 
   output$movingEqPlot = renderPlot({
-    #browser(text = "movingEqPlot")
+    CM = rValues$CM
+    isolate({
+      if(rValues$movingEqPlotFreeze)
+           CM = rValues$CMsaved
+    })
     end_start = input$end_start
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
-    movingEqPlot(rValues$CM,
-                 paramToChange = input$Parameter,
-                 constants = rValues$constants,
-                 start = start,
-                 end = end)
+    return(movingEqPlot(CM = CM,
+                        paramToChange = input$Parameter,
+                        constants = rValues$constants,
+                        start = start,
+                        end = end)
+    )
+  })
+
+  observe({
+    if(input$Load_end){
+      isolate({
+        rValues$CMsaved = rValues$CM
+        rValues$movingEqPlotFreeze = TRUE
+        rValues$initial <- rValues$predictedEq
+        nodes = strsplit(input$Parameter, "->")[[1]]
+        fromNode = nodes[1]
+        toNode = nodes[2]
+        increment = input$end_start
+        rValues$CM[toNode, fromNode] = rValues$CM[toNode, fromNode] + increment
+      })
+    }
+
   })
 
   output$cemPlot = renderImage({
@@ -224,10 +246,19 @@ ui = fluidPage(
                   plotOutput("plot")),
            column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
                   fluidRow(
-                    column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K")),
-                    column(6, numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1))
+                    column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "R->R")),
+                    column(6, numericInput(inputId = "end_start", label = "end minus start", min = -2 ,max = 2, step = 0.1, value = 1))
                   ),
+                  fluidRow(column(12, offset = 6 ,tagAppendAttributes
+                    (actionButton(inputId = "Load_end", label = "Load End Value into CM")
+                    ))),
+
+
                   plotOutput("movingEqPlot")
+
+
+              #add end to CM Matrix
+              #freeze moving equilibrium
            )
   )
 )
