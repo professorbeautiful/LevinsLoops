@@ -146,11 +146,13 @@ server = function(input, output, session) {
 
 
   output$movingEqPlot = renderPlot({
-    CM = rValues$CM
-    isolate({
-      if(rValues$movingEqPlotFreeze)
-           CM = rValues$CMsaved
-    })
+
+    if(rValues$movingEqPlotFreeze)
+      CM = rValues$CMsaved
+    else
+      CM <- rValues$CM
+    rValues$movingEqPlotFreeze = FALSE
+
     end_start = input$end_start
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
@@ -165,15 +167,19 @@ server = function(input, output, session) {
   observe({
     if(input$Load_end){
       isolate({
-        rValues$CMsaved = rValues$CM
+        rValues$CMsaved <- rValues$CM
         rValues$movingEqPlotFreeze = TRUE
         rValues$initial <- rValues$predictedEq
+        print(rValues$initial)
         nodes = strsplit(input$Parameter, "->")[[1]]
         fromNode = nodes[1]
         toNode = nodes[2]
         increment = input$end_start
-        rValues$CM[toNode, fromNode] = rValues$CM[toNode, fromNode] + increment
-      })
+        newValue = rValues$CM[toNode, fromNode] + increment
+        rValues$CM[toNode, fromNode] = newValue
+        updateNumericInput(session = session, nodeNameID(n1 = toNode, n2 = fromNode),
+                                                         value = newValue)
+        })
     }
 
   })
@@ -259,6 +265,7 @@ ui = fluidPage(
 
               #add end to CM Matrix
               #freeze moving equilibrium
+              #find where the cem is originally made and duplicate it by setting equal to rvalues$CMsaved
            )
   )
 )
