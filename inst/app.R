@@ -176,7 +176,7 @@ server = function(input, output, session) {
         toNode = nodes[2]
         increment = input$end_start
         newValue = rValues$CM[toNode, fromNode] + increment
-        rValues$CM[toNode, fromNode] = newValue
+        #rValues$CM[toNode, fromNode] = newValue
         updateNumericInput(session = session, nodeNameID(n1 = toNode, n2 = fromNode),
                                                          value = newValue)
         })
