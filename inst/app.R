@@ -149,6 +149,11 @@ observe({
       function(sliders) fluidRow(
         lapply(returnVal[sliders], column, width=3)
       ))  #shiny::tagAppendAttributes()
+    returnVal = div(style="background:darkGrey",
+        checkboxInput(inputId='sliderPanelCheckbox', value=FALSE, width='100%',
+                      label=em(strong("Show/hide editor for the CM (community matrix)"))),
+        conditionalPanel('input.sliderPanelCheckbox', returnVal)
+    )
     returnVal
   })
   output$constants = renderUI({
@@ -161,8 +166,13 @@ observe({
                                       step = 0.01)
                        }
     )
-    returnVal = fluidRow("constants (inputs)",
-                         lapply(constantsInputs, column, width=2))
+    returnVal = fluidRow(column(2, h3("constants (inputs)")),
+                         column(10, lapply(constantsInputs, column, width=2)))
+    returnVal = div(style="background:darkGrey",
+                    checkboxInput(inputId='constantsPanelCheckbox', value=FALSE, width='100%',
+                                  label=em(strong("Show/hide editor for the constants (inputs)"))),
+                    conditionalPanel('input.constantsPanelCheckbox', returnVal)
+    )
     returnVal
   })
   output$initial = renderUI({
@@ -175,8 +185,7 @@ observe({
                                             step = 0.01)
                              }
     )
-    returnVal = fluidRow("initial (inputs)",
-                         lapply(initialInputs, column, width=2))
+    returnVal = fluidRow(column(offset=1, 11, lapply(initialInputs, column, width=3)))
     returnVal
   })
   output$equilibriumTable = renderTable({
@@ -287,13 +296,7 @@ ui = fluidPage(
                             width="800px",
                             label = "Ipm", value = ""
                   ))
-           # ,
-           # column(2, br(),
-           #        actionButton("loadModel", "Load model"))
            ),
-
-  # fluidRow(column(12, tagAppendAttributes
-  #                 (h2(textOutput("comment")), style="text-align:center"))),
   fluidRow(column(6, h2("Community matrix"),
                   imageOutput("cmPlot"),
                   tagAppendAttributes(style="font-size:200%",
@@ -304,19 +307,19 @@ ui = fluidPage(
                                        tableOutput("effectMatrix")))
   ),
   tagAppendAttributes(style="border-width:10px", hr()),
-  fluidRow(column(offset = 2, 10,  uiOutput("sliders"))),
+  fluidRow(column(offset = 0, 12,  uiOutput("sliders"))),
   uiOutput("constants"), # constant inputs into nodes
-  uiOutput("initial"),  # initial values of variables
   fluidRow(column(3, ""), column(4, tableOutput("equilibriumTable"))),
-  fluidRow(column(6, h2("Dynamic"),
+  fluidRow(column(6, h2("Dynamic trajectory plot"),
                   fluidRow(
                     numericInput(inputId = "Tmax",label = "Tmax",value = 15, min = 1, step = 1 ),
                     checkboxInput("noNeg","negatives disallowed?", value = TRUE )),
-                  "Starting Value: ",
-                  actionButton("loadEquilibrium", "Load Equilibrium"),
-                  actionButton("loadDefault", "Load Default Values"),
+                  h4("Initial values: "),
+                  fluidRow(column(offset=1, 3, actionButton("loadEquilibrium", "Load Equilibrium")),
+                           column(3, actionButton("loadDefault", "Load Default Values"))),
+                  uiOutput("initial"),  # initial values of variables
                   plotOutput("plot")),
-           column(6, h2("MOVING EQUILIBRIUM PLOT will go here"),
+           column(6, h2("Moving equilibrium plot"),
                   fluidRow(
                     column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K")),
                     column(6, numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1))
