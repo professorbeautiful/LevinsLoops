@@ -15,20 +15,36 @@ modelStringList = c(
   'Qout-(Qout    Pressure-( Pressure    Depth-> Pressure  Pressure ->Qout  Qout-(Depth  ### Denver Dash bathtub'
 )
 
-nodeNameID = function(n1, n2) paste("Input", n1, n2, sep="_")
-nodeNameLabel = function(n1, n2) paste(n1, n2, sep="->")
+
+nodeNameID = function(n1, n2=NULL) {
+  if(missing(n2))
+    paste("Input", n1, sep="_")
+  else
+    paste("Input", n1, n2, sep="_")
+}
+nodeNameLabel = function(n1, n2=NULL) {
+  if(missing(n2))
+    paste(n1, sep="->")
+  else
+    paste(n1, n2, sep="->")
+}
 
 
 server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins
+  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
+                           modelStringModified = FALSE,
+                           constantsDefault=c(1000, rep( -200, 4)),
+                           initialDefault=c(1000, rep(0, 4)),
+                           constants=NULL, initial=NULL
   )
 
   make.CM = reactive({
     ### responds to the slider values.
-    nodeNames = rownames(rValues$CM_qual)
+    rValues$CMsaved = rValues$CM
+    rValues$nodeNames = nodeNames = rownames(rValues$CM_qual)
     CMtry = try({
       for(X1 in nodeNames)
         for(X2 in nodeNames)
@@ -41,16 +57,32 @@ server = function(input, output, session) {
        | is.null(CMtry))
       returnVal = rValues$CM
     else returnVal = rValues$CM = CMtry
-    nSpecies = length(nodeNames)
-    death = (-100)
-    if (is.null(rValues$initial) | length(rValues$initial) != nSpecies){
-
-      rValues$constants = c(1000,  rep(death, nSpecies-1))
-      rValues$initial = c(1000,  rep(1, nSpecies-1))
-    }
+    make.initial()
+    make.constants()
     return (returnVal)
   })
-  observe(priority = 2, {
+  make.constants = reactive({
+    death = (-200)
+    nSpecies = length(rValues$nodeNames)
+    if (is.null(rValues$constants) | length(rValues$constants) != nSpecies)
+      rValues$constantsDefault = rValues$constants = c(1000,  rep(death, nSpecies-1))
+    names(rValues$constantsDefault) =  names(rValues$constants) = rValues$nodeNames
+    try({
+      for(X1 in rValues$nodeNames)
+          rValues$constants[X1] = input[[paste0("constants_", nodeNameID(X1))]]
+    })
+  })
+  make.initial = reactive({
+    nSpecies = length(rValues$nodeNames)
+    if (is.null(rValues$initial) | length(rValues$initial) != nSpecies)
+      rValues$initialDefault = rValues$initial = c(1000,  rep(1, nSpecies-1))
+    names(rValues$initialDefault) =  names(rValues$initial) = rValues$nodeNames
+    try({
+      for(X1 in rValues$nodeNames)
+        rValues$initial[X1] = input[[paste0("initial_",nodeNameID(X1))]]
+    })
+  })
+  observe({
     updateTextInput(session=session, inputId = "modelString",
                     value = input$modelList,
                     label = paste("Selected model string ",
@@ -119,7 +151,34 @@ observe({
       ))  #shiny::tagAppendAttributes()
     returnVal
   })
-
+  output$constants = renderUI({
+    constantsInputs = lapply(rValues$nodeNames,
+                       function(nodeName) {
+                         numericInput(inputId = paste0("constants_", nodeNameID(nodeName)),
+                                      label = nodeNameLabel(nodeName),
+                                      min = -1.5, max = 1.5,
+                                      value = rValues$constantsDefault[nodeName],
+                                      step = 0.01)
+                       }
+    )
+    returnVal = fluidRow("constants (inputs)",
+                         lapply(constantsInputs, column, width=2))
+    returnVal
+  })
+  output$initial = renderUI({
+    initialInputs = lapply(rValues$nodeNames,
+                             function(nodeName) {
+                               numericInput(inputId = paste0("initial_",nodeNameID(nodeName)),
+                                            label = nodeNameLabel(nodeName),
+                                            min = -1.5, max = 1.5,
+                                            value = rValues$initialDefault[nodeName],
+                                            step = 0.01)
+                             }
+    )
+    returnVal = fluidRow("initial (inputs)",
+                         lapply(initialInputs, column, width=2))
+    returnVal
+  })
   output$equilibriumTable = renderTable({
     cat("predictedEq:\n")
     predictedEq = rValues$predictedEq = attr(rValues$dynamSimResult, "predictedEq")
@@ -136,9 +195,9 @@ observe({
                initial=rValues$initial,
                attachAttributes=TRUE, returnLast=TRUE,
                noNeg = input$noNeg, Tmax = input$Tmax)
-    abline(h=dynamSimResult)
-    if(exists("previousdynamSimResult"))
-      abline(h=previousdynamSimResult, lty=2)
+    # abline(h=dynamSimResult)
+    # if(exists("previousdynamSimResult"))
+    #   abline(h=previousdynamSimResult, lty=2)
     previousdynamSimResult <<- dynamSimResult
   })
 
@@ -198,15 +257,19 @@ observe({
     parameter_names = nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
     updateSelectInput(session = session, inputId = "Parameter", choices = parameter_names)
   })
-
-  observe({
-    if(!is.null(input$loadModel))
-      if(input$loadModel > 0){
-        isolate(rValues$CM <-rValues$CM_qual <- stringToCM(input$modelString))
+#
+#   observe({
+#     if(!is.null(input$loadStringIntoModel))
+#       if(input$loadStringIntoModel > 0){
+#         isolate(rValues$CM <-rValues$CM_qual <- stringToCM(input$modelString))
+#       }
+#     if(!is.null(input$loadString))
+#       if(input$loadString > 0){
+#         isolate(rValues$CM <-rValues$CM_qual <- stringToCM(input$modelString))
+#       }
+#   })
+#   output$comment = renderText({rValues$comment})
       }
-  })
-  output$comment = renderText({rValues$comment})
-}
 
 ui = fluidPage(
   shinyDebuggingPanel::withDebuggingPanel(),
@@ -241,7 +304,9 @@ ui = fluidPage(
                                        tableOutput("effectMatrix")))
   ),
   tagAppendAttributes(style="border-width:10px", hr()),
-  fluidRow(column(offset = 2, 6,  uiOutput("sliders"))),
+  fluidRow(column(offset = 2, 10,  uiOutput("sliders"))),
+  uiOutput("constants"), # constant inputs into nodes
+  uiOutput("initial"),  # initial values of variables
   fluidRow(column(3, ""), column(4, tableOutput("equilibriumTable"))),
   fluidRow(column(6, h2("Dynamic"),
                   fluidRow(
