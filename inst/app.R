@@ -210,7 +210,7 @@ observe({
   observe({
     if(input$loadDefault){
       nSpecies = nrow(rValues$CM_qual)
-      isolate(rValues$initial <- c(1000,  rep(1, nSpecies-1)))
+      isolate(rValues$initial <- rValues$initialDefault)
     }
   })
 
