@@ -35,10 +35,14 @@ server = function(input, output, session) {
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
   rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
+
                            modelStringModified = FALSE,
                            constantsDefault=c(1000, rep( -200, 4)),
                            initialDefault=c(1000, rep(0, 4)),
-                           constants=NULL, initial=NULL
+                           constants=NULL, initial=NULL,
+
+                           movingEqPlotFreeze = FALSE
+
   )
 
   make.CM = reactive({
@@ -251,15 +255,47 @@ server = function(input, output, session) {
 
 
   output$movingEqPlot = renderPlot({
-    #browser(text = "movingEqPlot")
+
+    if(rValues$movingEqPlotFreeze)
+      CM = rValues$CMsaved
+    else
+      CM <- rValues$CM
+    rValues$movingEqPlotFreeze = FALSE
+
     end_start = input$end_start
     start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
     end = start + end_start
-    movingEqPlot(rValues$CM,
-                 paramToChange = input$Parameter,
-                 constants = rValues$constants,
-                 start = start,
-                 end = end)
+    return(movingEqPlot(CM = CM,
+                        paramToChange = input$Parameter,
+                        constants = rValues$constants,
+                        start = start,
+                        end = end)
+    )
+  })
+
+  observe({
+    if(input$Load_end){
+      isolate({
+        rValues$CMsaved <- rValues$CM
+        rValues$movingEqPlotFreeze = TRUE
+        for(X1 in rValues$nodeNames) {
+          initialInputID = paste0("initial_",nodeNameID(X1))
+          updateNumericInput(session = session, inputId = initialInputID,
+                           value = rValues$predictedEq[X1])
+        }
+        rValues$initial <- rValues$predictedEq
+        print(rValues$initial)
+        nodes = strsplit(input$Parameter, "->")[[1]]
+        fromNode = nodes[1]
+        toNode = nodes[2]
+        increment = input$end_start
+        newValue = rValues$CM[toNode, fromNode] + increment
+        #rValues$CM[toNode, fromNode] = newValue
+        updateNumericInput(session = session, nodeNameID(n1 = toNode, n2 = fromNode),
+                                                         value = newValue)
+        })
+    }
+
   })
 
   output$cemPlot = renderImage({
@@ -333,10 +369,20 @@ ui = fluidPage(
                   plotOutput("plot")),
            column(6, h2("Moving equilibrium plot"),
                   fluidRow(
-                    column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "K")),
-                    column(6, numericInput(inputId = "end_start", label = "end-start", min = -2 ,max = 2, step = 0.1, value = 1))
+                    column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "R->R")),
+                    column(6, numericInput(inputId = "end_start", label = "end minus start", min = -2 ,max = 2, step = 0.1, value = 1))
                   ),
+                  fluidRow(column(12, offset = 6 ,tagAppendAttributes
+                    (actionButton(inputId = "Load_end", label = "Load End Value into CM")
+                    ))),
+
+
                   plotOutput("movingEqPlot")
+
+
+              #add end to CM Matrix
+              #freeze moving equilibrium
+              #find where the cem is originally made and duplicate it by setting equal to rvalues$CMsaved
            )
   )
 )
