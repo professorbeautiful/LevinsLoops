@@ -50,9 +50,9 @@ server = function(input, output, session) {
         for(X2 in nodeNames)
           rValues$CM[X2,X1] = input[[nodeNameID(X1,X2)]]
     })
-    print(rValues$CM)
-    print(CMtry)
-    print(class(CMtry))
+    # print(rValues$CM)
+    # print(CMtry)
+    # print(class(CMtry))
     if(class(CMtry) == 'try-error'
        | is.null(CMtry))
       returnVal = rValues$CM
@@ -81,6 +81,7 @@ server = function(input, output, session) {
       for(X1 in rValues$nodeNames)
         rValues$initial[X1] = input[[paste0("initial_",nodeNameID(X1))]]
     })
+    cat('make.initial: '); print(rValues$initial)
   })
   observe({
     updateTextInput(session=session, inputId = "modelString",
@@ -113,7 +114,7 @@ server = function(input, output, session) {
     })
   })
 
-observe({
+  observe({
     updateTextInput(session = session,inputId = "IpmnetString",
                     value = try(CMtoIPMnet(stringToCM(input$modelString))))
   })
@@ -122,7 +123,7 @@ observe({
     try_out = try(out.cm(rValues$CM_qual))
   })
   output$effectMatrix = renderTable({
-    cat("effectMatrix\n")
+    cat("CEM: effectMatrix\n")
     print(out.cm(t(attr(rValues$dynamSimResult, "effectMatrix"))))
   })
   output$sliders = renderUI( {
@@ -210,20 +211,31 @@ observe({
     previousdynamSimResult <<- dynamSimResult
   })
 
-
+  loadNewInitials = function(newValues) {
+    try({
+      for(X1 in names(newValues)) {
+        initialInputID = paste0("initial_", nodeNameID(X1))
+        updateNumericInput(session = session, inputId = initialInputID,
+                           value = as.vector(newValues[X1]) )
+      }
+      # If you do not wrap the value in "as.vector", then it is a named vector,
+      # and we get the error
+      #   Input to asJSON(keep_vec_names=TRUE) is a named vector.
+      #   In a future version of jsonlite, this option will not be supported,
+      #   and named vectors will be translated into arrays instead of objects.
+      #   If you want JSON object output, please use a named list instead. See ?toJSON.
+      # Guess what. It already bombs.
+      # "as.vector" solves the problem by stripping the name off of the value.
+    })
+  }
   observe({
-    if(input$loadEquilibrium){
-      isolate(rValues$initial <- rValues$predictedEq)
-    }
+    if(input$loadEquilibrium)
+      isolate(loadNewInitials(rValues$predictedEq))
   })
   observe({
-    if(input$loadDefault){
-      nSpecies = nrow(rValues$CM_qual)
-      isolate(rValues$initial <- rValues$initialDefault)
-    }
+    if(input$loadDefault)
+      isolate(loadNewInitials(rValues$initialDefault))
   })
-
-
 
   output$cmPlot = renderImage({
     graph.cm(rValues$CM_qual, file="M.graphcm.dot")
