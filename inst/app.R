@@ -276,21 +276,18 @@ server = function(input, output, session) {
   observe({
     if(input$Load_end){
       isolate({
+        ### For communicating and 'freezing' the movingEq plot, where CMsaved will be used
+        ### in order to preserve the current plot.
         rValues$CMsaved <- rValues$CM
         rValues$movingEqPlotFreeze = TRUE
-        for(X1 in rValues$nodeNames) {
-          initialInputID = paste0("initial_",nodeNameID(X1))
-          updateNumericInput(session = session, inputId = initialInputID,
-                           value = rValues$predictedEq[X1])
-        }
-        rValues$initial <- rValues$predictedEq
-        print(rValues$initial)
+        ### Load the current equilibrium as the starting value for the dynamic plot.
+        loadNewInitials(rValues$predictedEq)
+        # Finally update the CM with the "end" value of the parameter that is changing.
         nodes = strsplit(input$Parameter, "->")[[1]]
         fromNode = nodes[1]
         toNode = nodes[2]
         increment = input$end_start
         newValue = rValues$CM[toNode, fromNode] + increment
-        #rValues$CM[toNode, fromNode] = newValue
         updateNumericInput(session = session, nodeNameID(n1 = toNode, n2 = fromNode),
                                                          value = newValue)
         })
