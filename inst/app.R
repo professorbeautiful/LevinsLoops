@@ -367,7 +367,7 @@ ui = fluidPage(
            column(6, h2("Moving equilibrium plot"),
                   fluidRow(
                     column(6, selectInput(inputId = "Parameter",label = "Parameter to Change", choices = "R->R")),
-                    column(6, numericInput(inputId = "end_start", label = "end minus start", min = -2 ,max = 2, step = 0.1, value = 1))
+                    column(6, numericInput(inputId = "end_start", label = "end minus start", min = -2 ,max = 2, step = 0.1, value = 0.1))
                   ),
                   fluidRow(column(12, offset = 6 ,tagAppendAttributes
                     (actionButton(inputId = "Load_end", label = "Load End Value into CM")
