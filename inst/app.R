@@ -179,26 +179,35 @@ server = function(input, output, session) {
     )
     returnVal
   })
+  output$cmEquations = renderPlot({
+    makeEquationDisplay = function(cm){
+      nodeNames = colnames(cm)
+      getRow = function(node){
+        rhs = paste(cm[node, ],'*',nodeNames, sep = "" , collapse = " + "   )
+        lhs = paste("dot(",node, ")" )
+        return(paste(lhs, rhs, sep = "=="))
+      }
+      formulas = sapply(nodeNames,getRow)
 
-  output$matrix = renderUI({
-    getRow = function(irow){
-      rhs = paste(rValues$CM[irow, ],'*',rValues$nodeNames, sep = "" , collapse = " + "   )
-      lhs = paste("dot(",rValues$nodeNames[irow] )
-      return(paste(rhs, lhs, sep = "=="))
+      plot(0:(length(formulas)+1),0:(length(formulas)+1), axes=F, pch="",xlab="",ylab="")
 
-
+      for(n in length(formulas):1)
+        text(length(formulas)/10, length(formulas)-n, parse(text=formulas[n]), adj = 0)
     }
-    cmEquations = lapply(rValues$CM,
-                        paste, collapse = "")
-    returnVal = fluidRow(column(3, h3("Equations")),
-                            column(10, lapply(cmEquations,column, width =2)))
-    returnVal = div(style="background:darkGrey",
-                      checkboxInput(inputId='matrixPanelCheckbox', value=FALSE, width='100%',
+    makeEquationDisplay(rValues$CM)
+  })
+  output$equationPanel = renderUI({
+
+      returnVal = fluidRow(column(3, h3("Equations")),
+                           column(10, plotOutput(outputId = "cmEquations")))
+      returnVal = div(style="background:darkGrey",
+                      checkboxInput(inputId='equationPanelCheckbox', value=FALSE, width='100%',
                                     label=em(strong("Show/hide Differential Equations"))),
-                      conditionalPanel('input.matrixPanelCheckbox', returnVal)
+                      conditionalPanel('input.equationPanelCheckbox', returnVal)
     )
     returnVal
   })
+
 
 
 
@@ -382,7 +391,7 @@ ui = fluidPage(
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 0, 12,  uiOutput("sliders"))),
   uiOutput("constants"), # constant inputs into nodes
-  uiOutput("matrix"),
+  uiOutput("equationPanel"),
   fluidRow(column(3, ""), column(4, tableOutput("equilibriumTable"))),
   fluidRow(column(6, h2("Dynamic trajectory plot"),
                   fluidRow(
