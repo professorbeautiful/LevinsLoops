@@ -16,11 +16,13 @@ modelStringList = c(
 )
 
 
-nodeNameID = function(n1, n2=NULL) {
-  if(missing(n2))
-    paste("Input", n1, sep="_")
+nodeNameID = function(n1=NULL, n2=NULL, param=NULL) {
+  if(!is.null(param))
+    return(paste("Input", gsub("->", "_", param), sep="_"))
+  else if(is.null(n2))
+    return(paste("Input", n1, sep="_"))
   else
-    paste("Input", n1, n2, sep="_")
+    return(paste("Input", n1, n2, sep="_"))
 }
 nodeNameLabel = function(n1, n2=NULL) {
   if(missing(n2))
@@ -40,9 +42,7 @@ server = function(input, output, session) {
                            constantsDefault=c(1000, rep( -200, 4)),
                            initialDefault=c(1000, rep(0, 4)),
                            constants=NULL, initial=NULL,
-
                            movingEqPlotFreeze = FALSE
-
   )
 
   make.CM = reactive({
@@ -54,9 +54,6 @@ server = function(input, output, session) {
         for(X2 in nodeNames)
           rValues$CM[X2,X1] = input[[nodeNameID(X1,X2)]]
     })
-    # print(rValues$CM)
-    # print(CMtry)
-    # print(class(CMtry))
     if(class(CMtry) == 'try-error'
        | is.null(CMtry))
       returnVal = rValues$CM
@@ -135,15 +132,17 @@ server = function(input, output, session) {
     rValues$nodeNames = nodeNames = rownames(CM)
     rValues$nameGrid = nameGrid = expand.grid(rownames(CM), rownames(CM),
                                               stringsAsFactors = FALSE)
+    parameterList = apply(nameGrid, 1, paste0, collapse="->")
     returnVal = lapply(1:nrow(nameGrid),
                        function(linkNum) {
                          nodes = unlist(nameGrid[linkNum, ])
                          node_to = nodes[1]
                          node_from = nodes[2]
+                         parameter = parameterList[linkNum]
                          numericInput(inputId = nodeNameID(node_from, node_to),
                                       label = nodeNameLabel(node_from, node_to),
                                       min = -1.5, max = 1.5,
-                                      value = CM[node_to, node_from],
+                                      value = getParameterValue(parameter, CM),
                                       step = 0.01)
                        }
     )
@@ -253,17 +252,21 @@ server = function(input, output, session) {
          alt = "CM should be here")
   }, deleteFile = FALSE)
 
-
+  getParameterValue = function(parameter, CM) {
+    from = strsplit(parameter, "->")[[1]][2]
+    to = strsplit(parameter, "->")[[1]][1]
+    return(CM[to, from])
+  }
   output$movingEqPlot = renderPlot({
 
     if(rValues$movingEqPlotFreeze)
-      CM = rValues$CMsaved
+      CM = isolate({rValues$CMsaved})
     else
       CM <- rValues$CM
-    rValues$movingEqPlotFreeze = FALSE
+    #isolate(rValues$movingEqPlotFreeze <- FALSE)
 
     end_start = input$end_start
-    start = input[[paste0("Input_", gsub("->", "_", input$Parameter))]]
+    start = getParameterValue(input$Parameter, CM)
     end = start + end_start
     return(movingEqPlot(CM = CM,
                         paramToChange = input$Parameter,
@@ -283,13 +286,15 @@ server = function(input, output, session) {
         ### Load the current equilibrium as the starting value for the dynamic plot.
         loadNewInitials(rValues$predictedEq)
         # Finally update the CM with the "end" value of the parameter that is changing.
-        nodes = strsplit(input$Parameter, "->")[[1]]
-        fromNode = nodes[1]
-        toNode = nodes[2]
         increment = input$end_start
-        newValue = rValues$CM[toNode, fromNode] + increment
-        updateNumericInput(session = session, nodeNameID(n1 = toNode, n2 = fromNode),
+        startingValue = getParameterValue(input$Parameter, rValues$CM)
+        newValue = startingValue + increment
+        updateNumericInput(session = session, nodeNameID(param=input$Parameter),
                                                          value = newValue)
+        cat("input$Load_end:  startingValue=", startingValue, "  newValue=", newValue, "\n")
+        rValues$CM[strsplit(input$Parameter, "->")[[1]][2],
+                   strsplit(input$Parameter, "->")[[1]][1]] <- newValue
+        print(rValues$CM)
         })
     }
 
