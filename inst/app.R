@@ -179,6 +179,29 @@ server = function(input, output, session) {
     )
     returnVal
   })
+
+  output$matrix = renderUI({
+    getRow = function(irow){
+      rhs = paste(rValues$CM[irow, ],'*',rValues$nodeNames, sep = "" , collapse = " + "   )
+      lhs = paste("dot(",rValues$nodeNames[irow] )
+      return(paste(rhs, lhs, sep = "=="))
+
+
+    }
+    cmEquations = lapply(rValues$CM,
+                        paste, collapse = "")
+    returnVal = fluidRow(column(3, h3("Equations")),
+                            column(10, lapply(cmEquations,column, width =2)))
+    returnVal = div(style="background:darkGrey",
+                      checkboxInput(inputId='matrixPanelCheckbox', value=FALSE, width='100%',
+                                    label=em(strong("Show/hide Differential Equations"))),
+                      conditionalPanel('input.matrixPanelCheckbox', returnVal)
+    )
+    returnVal
+  })
+
+
+
   output$initial = renderUI({
     initialInputs = lapply(rValues$nodeNames,
                              function(nodeName) {
@@ -359,6 +382,7 @@ ui = fluidPage(
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 0, 12,  uiOutput("sliders"))),
   uiOutput("constants"), # constant inputs into nodes
+  uiOutput("matrix"),
   fluidRow(column(3, ""), column(4, tableOutput("equilibriumTable"))),
   fluidRow(column(6, h2("Dynamic trajectory plot"),
                   fluidRow(
