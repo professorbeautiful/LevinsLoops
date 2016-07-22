@@ -179,9 +179,10 @@ server = function(input, output, session) {
     )
     returnVal
   })
-  output$cmEquations = renderPlot({
+  output$cmEquations = renderPlot(height=function()360*length(rValues$nodeNames)/4, expr={
     makeEquationDisplay = function(cm){
       nodeNames = colnames(cm)
+      nNodes = length(nodeNames)
       getRow = function(node){
         rhs = paste(cm[node, ],'*',nodeNames, sep = "" , collapse = " + "   )
         lhs = paste("dot(",node, ")" )
@@ -189,19 +190,22 @@ server = function(input, output, session) {
       }
       formulas = sapply(nodeNames,getRow)
 
-      plot(0:(length(formulas)+1),0:(length(formulas)+1), axes=F, pch="",xlab="",ylab="")
+      par(fin=c(8, nNodes), mai=c(0,0,0,0)) # ,mai=c(0,0,0,0),
+      plot(0:1, 0:1, axes=F, pch="", xlab="", ylab=""
+           )
 
-      for(n in length(formulas):1)
-        text(length(formulas)/10, length(formulas)-n, parse(text=formulas[n]), adj = 0)
+      for(n in nNodes:1)
+        text(0, 1-n/nNodes, parse(text=formulas[n]), adj = 0, cex=3, xpd=NA)
     }
     makeEquationDisplay(rValues$CM)
   })
   output$equationPanel = renderUI({
 
-      returnVal = fluidRow(column(3, h3("Equations")),
-                           column(10, plotOutput(outputId = "cmEquations")))
+      returnVal = div(fluidRow(column(2, h3("Equations")),
+                           column(8, plotOutput(outputId = "cmEquations"))),
+                      hr())
       returnVal = div(style="background:darkGrey",
-                      checkboxInput(inputId='equationPanelCheckbox', value=FALSE, width='100%',
+                      checkboxInput(inputId='equationPanelCheckbox', value=TRUE, width='100%',
                                     label=em(strong("Show/hide Differential Equations"))),
                       conditionalPanel('input.equationPanelCheckbox', returnVal)
     )
