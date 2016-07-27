@@ -22,19 +22,19 @@ modelStringList = c(
 )
 
 
-nodeNameID = function(n1=NULL, n2=NULL, param=NULL) {
+nodeNameID = function(FROM=NULL, TO=NULL, param=NULL) {
   if(!is.null(param))
-    return(paste("Input", gsub("->", "_", param), sep="_"))
-  else if(is.null(n2))
-    return(paste("Input", n1, sep="_"))
+    return(paste("Input", gsub("->", "_", param), sep="_")) ## convert from label to id
+  else if(is.null(TO))
+    return(paste("Input", FROM, sep="_"))  ## create id for a constant
   else
-    return(paste("Input", n1, n2, sep="_"))
+    return(paste("Input", FROM, TO, sep="_"))  ## create id for a link
 }
-nodeNameLabel = function(n1, n2=NULL) {
-  if(missing(n2))
-    paste(n1, sep="->")
+nodeNameLabel = function(FROM, TO=NULL) {
+  if(missing(TO))
+    paste(FROM, "(const)")
   else
-    paste(n1, n2, sep="->")
+    paste(FROM, TO, sep="->")
 }
 
 
@@ -43,7 +43,6 @@ server = function(input, output, session) {
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
   rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
-
                            modelStringModified = FALSE,
                            constantsDefault=c(1000, rep( -200, 4)),
                            initialDefault=c(1000, rep(0, 4)),
@@ -56,9 +55,9 @@ server = function(input, output, session) {
     rValues$CMsaved = rValues$CM
     rValues$nodeNames = nodeNames = rownames(rValues$CM_qual)
     CMtry = try({
-      for(X1 in nodeNames)
-        for(X2 in nodeNames)
-          rValues$CM[X2,X1] = input[[nodeNameID(X1,X2)]]
+      for(FROM in nodeNames)
+        for(TO in nodeNames)
+          rValues$CM[TO,FROM] = input[[nodeNameID(FROM,TO)]]
     })
     if(class(CMtry) == 'try-error'
        | is.null(CMtry))
@@ -75,8 +74,8 @@ server = function(input, output, session) {
       rValues$constantsDefault = rValues$constants = c(1000,  rep(death, nSpecies-1))
     names(rValues$constantsDefault) =  names(rValues$constants) = rValues$nodeNames
     try({
-      for(X1 in rValues$nodeNames)
-          rValues$constants[X1] = input[[paste0("constants_", nodeNameID(X1))]]
+      for(NODE in rValues$nodeNames)
+          rValues$constants[NODE] = input[[paste0("constants_", nodeNameID(NODE))]]
     })
   })
   make.initial = reactive({
@@ -85,8 +84,8 @@ server = function(input, output, session) {
       rValues$initialDefault = rValues$initial = c(1000,  rep(1, nSpecies-1))
     names(rValues$initialDefault) =  names(rValues$initial) = rValues$nodeNames
     try({
-      for(X1 in rValues$nodeNames)
-        rValues$initial[X1] = input[[paste0("initial_",nodeNameID(X1))]]
+      for(NODE in rValues$nodeNames)
+        rValues$initial[NODE] = input[[paste0("initial_",nodeNameID(NODE))]]
     })
     cat('make.initial: '); print(rValues$initial)
   })
@@ -142,11 +141,11 @@ server = function(input, output, session) {
     returnVal = lapply(1:nrow(nameGrid),
                        function(linkNum) {
                          nodes = unlist(nameGrid[linkNum, ])
-                         node_to = nodes[1]
-                         node_from = nodes[2]
+                         node_TO = nodes[1]
+                         node_FROM = nodes[2]
                          parameter = parameterList[linkNum]
-                         numericInput(inputId = nodeNameID(node_from, node_to),
-                                      label = nodeNameLabel(node_from, node_to),
+                         numericInput(inputId = nodeNameID(node_FROM, node_TO),
+                                      label = nodeNameLabel(node_FROM, node_TO),
                                       min = -1.5, max = 1.5,
                                       value = getParameterValue(parameter, CM),
                                       step = 0.01)
@@ -261,10 +260,10 @@ server = function(input, output, session) {
 
   loadNewInitials = function(newValues) {
     try({
-      for(X1 in names(newValues)) {
-        initialInputID = paste0("initial_", nodeNameID(X1))
+      for(NODE in names(newValues)) {
+        initialInputID = paste0("initial_", nodeNameID(NODE))
         updateNumericInput(session = session, inputId = initialInputID,
-                           value = as.vector(newValues[X1]) )
+                           value = as.vector(newValues[NODE]) )
       }
       # If you do not wrap the value in "as.vector", then it is a named vector,
       # and we get the error
@@ -298,9 +297,9 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   getParameterValue = function(parameter, CM) {
-    to = strsplit(parameter, "->")[[1]][2]
-    from = strsplit(parameter, "->")[[1]][1]
-    return(CM[to, from])
+    TO = strsplit(parameter, "->")[[1]][2]
+    FROM = strsplit(parameter, "->")[[1]][1]
+    return(CM[TO, FROM])
   }
   output$movingEqPlot = renderPlot({
 
