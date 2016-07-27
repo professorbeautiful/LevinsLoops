@@ -71,9 +71,9 @@ movingEqPlot = function(CM,
   library(plotrix)
   try(
     plotrix::addtable2plot(display.rownames = TRUE,
-                start+(end-start)*0.1,
-                mean(c(min(trajectory), max(trajectory))),
-                changes,
+                x = start+(end-start)*0.1,
+                y = mean(c(min(trajectory), max(trajectory))),
+                table = changes,
                 xpad=1, ypad=1)
   )
   return(changes)
