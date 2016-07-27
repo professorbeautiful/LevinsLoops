@@ -184,13 +184,16 @@ server = function(input, output, session) {
       nodeNames = colnames(cm)
       nNodes = length(nodeNames)
       getRow = function(node){
-        rhs = paste(cm[node, ],'*',nodeNames, sep = "" , collapse = " + "   )
-        lhs = paste("dot(",node, ")" )
+        rhs = c(rValues$constants[node],
+                paste(cm[node, ],'%*% bolditalic(',
+                    nodeNames, ')', sep = ""  ) )
+        rhs = paste(rhs, collapse = " + "   )
+        lhs = paste("d*bolditalic(", node, ")/dt" )
         return(paste(lhs, rhs, sep = "=="))
       }
       formulas = sapply(nodeNames,getRow)
 
-      par(fin=c(8, nNodes), mai=c(0,0,0,0)) # ,mai=c(0,0,0,0),
+      par(fin=c(12, nNodes), mai=c(0,0,0,0)) # ,mai=c(0,0,0,0),
       plot(0:1, 0:1, axes=F, pch="", xlab="", ylab=""
            )
 
