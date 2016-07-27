@@ -34,12 +34,17 @@ movingEqPlot = function(CM,
   dimnames(trajectory)[[2]] = colnames(M)
   trajectory[1, ] = solve(CM, -constants)
 
-  nodes = strsplit(paramToChange, "->")[[1]]
-  fromNode = nodes[1]
-  toNode = nodes[2]
   increment = (end-start)/nPoints
   for (t in 2:nPoints) {
-    CM[toNode, fromNode] = CM[toNode, fromNode] + increment
+    if(length(grep("constant input", paramToChange)) > 0) {
+      TO = gsub(" (constant input)", "", paramToChange, fixed = TRUE)
+      constants[TO] = constants[TO] + increment
+    }
+    else {
+      TO = strsplit(paramToChange, "->")[[1]][2]
+      FROM = strsplit(paramToChange, "->")[[1]][1]
+      CM[TO, FROM] = CM[TO, FROM] + increment
+    }
     trajectory[t, ] =
       solve ( CM, -constants)
   }
@@ -53,7 +58,7 @@ movingEqPlot = function(CM,
   for(species in 1:nSpecies)
     lines(timeline, trajectory[ , species], col=species)
   ## Compare the CEM predictions to the changes, quantitatively.
-  CEMchanges = (-1) * sign(end-start) * solve(CM) [ , toNode]
+  CEMchanges = (-1) * sign(end-start) * solve(CM) [ , TO]
   ### Note that the "toNode" for the parameter (CM) is the one directly affected,
   ### so in the CEM it is the "fromNode", the column,
   ### and the "toNodes" are the ones indirectly affected.

@@ -22,17 +22,24 @@ modelStringList = c(
 )
 
 
-nodeNameID = function(FROM=NULL, TO=NULL, param=NULL) {
-  if(!is.null(param))
-    return(paste("Input", gsub("->", "_", param), sep="_")) ## convert from label to id
+
+
+nodeNameID = function(FROM=NULL, TO=NULL, paramLabel=NULL, tag=NULL) {
+  if(!is.null(paramLabel)) {
+    if(length(grep("constant", paramLabel)) > 0)
+        result = gsub(" (constant input)", "", paramLabel, fixed=TRUE)
+    else
+      result = gsub("->", "_", paramLabel) ## convert from label to id
+  }
   else if(is.null(TO))
-    return(paste("Input", FROM, sep="_"))  ## create id for a constant
+    result = FROM  ## create id for a constant from FROM only
   else
-    return(paste("Input", FROM, TO, sep="_"))  ## create id for a link
+    result = paste(FROM, TO, sep="_")  ## create id for a link
+  return(paste("Input", result, sep="_"))
 }
-nodeNameLabel = function(FROM, TO=NULL) {
+nodeNameLabel = function(FROM, TO=NULL, tag=NULL) {
   if(missing(TO))
-    paste(FROM, "(const)")
+    paste0(FROM, " (", tag, ")")
   else
     paste(FROM, TO, sep="->")
 }
@@ -168,7 +175,7 @@ server = function(input, output, session) {
     constantsInputs = lapply(rValues$nodeNames,
                        function(nodeName) {
                          numericInput(inputId = paste0("constants_", nodeNameID(nodeName)),
-                                      label = nodeNameLabel(nodeName),
+                                      label = nodeNameLabel(nodeName, tag="constant input"),
                                       min = -1.5, max = 1.5,
                                       value = rValues$constantsDefault[nodeName],
                                       step = 0.01)
@@ -226,7 +233,7 @@ server = function(input, output, session) {
     initialInputs = lapply(rValues$nodeNames,
                              function(nodeName) {
                                numericInput(inputId = paste0("initial_",nodeNameID(nodeName)),
-                                            label = nodeNameLabel(nodeName),
+                                            label = nodeNameLabel(nodeName, tag="initial"),
                                             min = -1.5, max = 1.5,
                                             value = rValues$initialDefault[nodeName],
                                             step = 0.01)
@@ -296,6 +303,9 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   getParameterValue = function(parameter, CM) {
+    if(length(grep("constant input", parameter)) > 0)
+       return(isolate(rValues$constants[
+         gsub(" (constant input)", "", parameter, fixed=TRUE)]))
     TO = strsplit(parameter, "->")[[1]][2]
     FROM = strsplit(parameter, "->")[[1]][1]
     return(CM[TO, FROM])
@@ -356,8 +366,12 @@ server = function(input, output, session) {
          alt = "CEM should be here")
   }, deleteFile = FALSE)
   observe({
-    parameter_names = nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
-    updateSelectInput(session = session, inputId = "Parameter", choices = parameter_names)
+    parameter_names = c(
+      nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
+    )
+    constant_names = nodeNameLabel(rValues$nameGrid[[1]], tag="constant input")
+    updateSelectInput(session = session, inputId = "Parameter",
+                      choices = c(constant_names, parameter_names))
   })
 #
 #   observe({
