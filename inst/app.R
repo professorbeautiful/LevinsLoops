@@ -390,12 +390,14 @@ ui = fluidPage(
                             label = "Ipm", value = ""
                   ))
            ),
-  fluidRow(column(6, h2("Community matrix"),
+  fluidRow(column(6,
                   imageOutput("cmPlot"),
+                  h2("Community matrix"),
                   tagAppendAttributes(style="font-size:200%",
                                       tableOutput("cmMatrix")))
-           ,column(6, h2("Effect matrix"),
+           ,column(6,
                    imageOutput("cemPlot"),
+                   h2("Effect matrix"),
                    tagAppendAttributes(style="font-size:200%",
                                        tableOutput("effectMatrix")))
   ),
