@@ -343,8 +343,8 @@ server = function(input, output, session) {
         increment = input$end_start
         startingValue = getParameterValue(input$Parameter, rValues$CM)
         newValue = startingValue + increment
-        updateNumericInput(session = session, nodeNameID(param=input$Parameter),
-                                                         value = newValue)
+        updateNumericInput(session = session, nodeNameID(paramLabel=input$Parameter),
+                                                    value = as.vector(newValue)) #JSON
         cat("input$Load_end:  startingValue=", startingValue, "  newValue=", newValue, "\n")
         rValues$CM[strsplit(input$Parameter, "->")[[1]][2],
                    strsplit(input$Parameter, "->")[[1]][1]] <- newValue
