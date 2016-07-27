@@ -220,7 +220,7 @@ server = function(input, output, session) {
                            column(8, plotOutput(outputId = "cmEquations"))),
                       hr())
       returnVal = div(style="background:darkGrey",
-                      checkboxInput(inputId='equationPanelCheckbox', value=TRUE, width='100%',
+                      checkboxInput(inputId='equationPanelCheckbox', value=FALSE, width='100%',
                                     label=em(strong("Show/hide Differential Equations"))),
                       conditionalPanel('input.equationPanelCheckbox', returnVal)
     )
