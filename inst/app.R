@@ -12,7 +12,13 @@ modelStringList = c(
   'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
   'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback',
   'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A ',
-  'Qout-(Qout    Pressure-( Pressure    Depth-> Pressure  Pressure ->Qout  Qout-(Depth  ### Denver Dash bathtub'
+  'Qout-(Qout    Pressure-( Pressure    Depth-> Pressure  Pressure ->Qout  Qout-(Depth  ### Denver Dash bathtub',
+  'Plant1 -( Plant1    Plant1 )-> Hvore1    Hvore1 )-> Pred
+   Plant2 -( Plant2    Plant2 )-> Hvore2    Hvore2 )-> Pred
+   Hvore1 )-> Parasite
+     ### Levins 1974 Fig 5 '
+### I_cide -( Parasite   I_cide -( Hvore1   I_cide -( Pred   I_cide -( I_cide
+###  But I_cide as a node doesnt work.
 )
 
 
