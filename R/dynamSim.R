@@ -43,7 +43,7 @@ dynamSim = function(M,
     plot(timeline, trajectory[ , 1], pch="",
          ylim = range(c(trajectory)),
          ylab="trajectories",
-         main="Dynamics")
+         main="")
     for(species in 1:nSpecies)
       lines(timeline, trajectory[ , species], col=species)
     abline(h=initial+offset, col=1:nSpecies, lty=2)

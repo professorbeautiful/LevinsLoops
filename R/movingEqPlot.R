@@ -54,7 +54,7 @@ movingEqPlot = function(CM,
        xlim = c(start, end),
        xlab=paramToChange,
        ylab="trajectories",
-       main="Moving Equilibria")
+       main="")
   for(species in 1:nSpecies)
     lines(timeline, trajectory[ , species], col=species)
   ## Compare the CEM predictions to the changes, quantitatively.
