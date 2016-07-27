@@ -397,12 +397,13 @@ ui = fluidPage(
            column(6,
                   textInput(inputId = "modelString",
                             width="800px",
-                            label = "model string (either Pittsburgh-style or ipm-style)", value = ""
+                            label = "model string", value = ""
                   )),
            column(6,
                   textInput(inputId = "IpmnetString",
                             width="800px",
-                            label = "Ipm", value = ""
+                            label = HTML("For pasting at <a href=http://ipmnet.org/loop/loopanalysis.aspx> Ipmnet.org</a>"),
+                            value = ""
                   ))
            ),
   fluidRow(column(6,
