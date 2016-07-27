@@ -66,16 +66,21 @@ movingEqPlot = function(CM,
   #   ns = as.character(round(n, digits))
   #   return(paste(rep(" ", )))s
   # }
+  mtext(text="START", at=start, side = 1, line = 2)
+  mtext(text="END", at=end, side = 1, line = 2)
   legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
          text.col=1:nSpecies, horiz = TRUE)
   library(plotrix)
   try(
-    plotrix::addtable2plot(display.rownames = TRUE,
-                x = start+(end-start)*0.1,
-                y = mean(c(min(trajectory), max(trajectory))),
-                table = changes,
-                xpad=1, ypad=1)
+    if(start < end)
+      plotrix::addtable2plot(display.rownames = TRUE,
+                             x = start+(end-start)*0.1,
+                             y = mean(c(min(trajectory), max(trajectory))),
+                             table = changes,
+                             xpad=1, ypad=1)
   )
+  #plotrix doessn't work well if x axis is in reverse direction.
+
   return(changes)
 }
 

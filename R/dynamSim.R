@@ -35,6 +35,9 @@ dynamSim = function(M,
     if(noNeg)
       trajectory[t, ] = pmax(0, trajectory[t, ])
   }
+  # Prevent overlap.
+  offset = ((1:nSpecies)) * range(trajectory)/200
+  trajectory = trajectory + outer(rep(1,ntimes), offset)
   if(plot) {
     timeline = seq(0,Tmax, by=timestep)[-1]
     plot(timeline, trajectory[ , 1], pch="",
@@ -43,6 +46,7 @@ dynamSim = function(M,
          main="Dynamics")
     for(species in 1:nSpecies)
       lines(timeline, trajectory[ , species], col=species)
+    abline(h=initial+offset, col=1:nSpecies, lty=2)
     legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
            text.col=1:nSpecies, horiz = TRUE)
     }
