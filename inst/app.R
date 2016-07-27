@@ -137,13 +137,12 @@ server = function(input, output, session) {
     rValues$nodeNames = nodeNames = rownames(CM)
     rValues$nameGrid = nameGrid = expand.grid(rownames(CM), rownames(CM),
                                               stringsAsFactors = FALSE)
-    parameterList = apply(nameGrid, 1, paste0, collapse="->")
     returnVal = lapply(1:nrow(nameGrid),
                        function(linkNum) {
                          nodes = unlist(nameGrid[linkNum, ])
                          node_TO = nodes[1]
                          node_FROM = nodes[2]
-                         parameter = parameterList[linkNum]
+                         parameter = nodeNameLabel(node_FROM, node_TO)
                          numericInput(inputId = nodeNameID(node_FROM, node_TO),
                                       label = nodeNameLabel(node_FROM, node_TO),
                                       min = -1.5, max = 1.5,
