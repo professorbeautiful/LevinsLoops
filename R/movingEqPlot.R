@@ -58,8 +58,8 @@ movingEqPlot = function(CM,
   ### so in the CEM it is the "fromNode", the column,
   ### and the "toNodes" are the ones indirectly affected.
   observedChanges = trajectory[nPoints, ] - trajectory[1, ]
-  changes = rbind(CEMchanges, observedChanges)
-  rownames(changes) = c("predicted", "observed")
+  changes = rbind(sign(CEMchanges), observedChanges)
+  rownames(changes) = c("predicted changes", "observed changes")
   colnames(changes) = rownames(CM)
   changes = round(changes, 2)
   # rightJustify = function(n, digits=3) {
