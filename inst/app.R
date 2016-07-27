@@ -289,8 +289,8 @@ server = function(input, output, session) {
   }, deleteFile = FALSE)
 
   getParameterValue = function(parameter, CM) {
-    from = strsplit(parameter, "->")[[1]][2]
-    to = strsplit(parameter, "->")[[1]][1]
+    to = strsplit(parameter, "->")[[1]][2]
+    from = strsplit(parameter, "->")[[1]][1]
     return(CM[to, from])
   }
   output$movingEqPlot = renderPlot({
