@@ -66,8 +66,8 @@ movingEqPlot = function(CM,
   #   ns = as.character(round(n, digits))
   #   return(paste(rep(" ", )))s
   # }
-  legend("left", rownames(M),
-         text.col=1:nSpecies, horiz = FALSE)
+  legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
+         text.col=1:nSpecies, horiz = TRUE)
   library(plotrix)
   try(
     plotrix::addtable2plot(display.rownames = TRUE,

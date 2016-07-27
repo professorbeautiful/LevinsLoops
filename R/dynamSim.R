@@ -43,8 +43,9 @@ dynamSim = function(M,
          main="Dynamics")
     for(species in 1:nSpecies)
       lines(timeline, trajectory[ , species], col=species)
-    legend("left", rownames(M), text.col=1:nSpecies, horiz = TRUE)
-  }
+    legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
+           text.col=1:nSpecies, horiz = TRUE)
+    }
   if(findEq) {
     cat("predictedEq:\n")
     predictedEq = print(solve(values, -constants))
