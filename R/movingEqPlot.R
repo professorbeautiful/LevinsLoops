@@ -46,13 +46,14 @@ movingEqPlot = function(CM,
   timeline = seq(start,end, length=nPoints)
   plot(timeline, trajectory[ , 1], pch="",
        ylim = range(c(trajectory)),
+       xlim = c(start, end),
        xlab=paramToChange,
        ylab="trajectories",
        main="Moving Equilibria")
   for(species in 1:nSpecies)
     lines(timeline, trajectory[ , species], col=species)
   ## Compare the CEM predictions to the changes, quantitatively.
-  CEMchanges = (-1)*solve(CM) [ , toNode]
+  CEMchanges = (-1) * sign(end-start) * solve(CM) [ , toNode]
   ### Note that the "toNode" for the parameter (CM) is the one directly affected,
   ### so in the CEM it is the "fromNode", the column,
   ### and the "toNodes" are the ones indirectly affected.
