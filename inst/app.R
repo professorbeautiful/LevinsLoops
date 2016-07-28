@@ -3,7 +3,13 @@ library("LoopAnalyst")
 library(shinyDebuggingPanel)
 
 data("cm.levins", package="LoopAnalyst")
-
+rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
+                         modelStringModified = FALSE,
+                         constantsDefault=c(1000, rep( -200, 4)),
+                         initialDefault=c(1000, rep(0, 4)),
+                         constants=NULL, initial=NULL,
+                         movingEqPlotFreeze = FALSE
+)
 modelStringList = c(
   'R -(R R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
   'a -( a     a )-> b  #Simple prey-predator',
@@ -22,12 +28,18 @@ modelStringList = c(
     ###  But I_cide as a node doesnt work.
 )
 
-
-
+getParameterValue = function(parameter, CM) {
+  if(is.a.constant(parameter))
+    return(isolate(rValues$constants[
+      gsub(" (constant input)", "", parameter, fixed=TRUE)]))
+  TO = strsplit(parameter, "->")[[1]][2]
+  FROM = strsplit(parameter, "->")[[1]][1]
+  return(CM[TO, FROM])
+}
 
 nodeNameID = function(FROM=NULL, TO=NULL, paramLabel=NULL, tag=NULL) {
   if(!is.null(paramLabel)) {
-    if(length(grep("constant", paramLabel)) > 0)
+    if(is.a.constant(paramLabel))
         result = gsub(" (constant input)", "", paramLabel, fixed=TRUE)
     else
       result = gsub("->", "_", paramLabel) ## convert from label to id
@@ -45,18 +57,16 @@ nodeNameLabel = function(FROM, TO=NULL, tag=NULL) {
     paste(FROM, TO, sep="->")
 }
 
+is.a.constant = function(parameter)
+  return(length(grep("constant", parameter)) > 0)
+
+
 
 server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-  rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
-                           modelStringModified = FALSE,
-                           constantsDefault=c(1000, rep( -200, 4)),
-                           initialDefault=c(1000, rep(0, 4)),
-                           constants=NULL, initial=NULL,
-                           movingEqPlotFreeze = FALSE
-  )
+
 
   make.CM = reactive({
     ### responds to the slider values.
@@ -227,9 +237,6 @@ server = function(input, output, session) {
     returnVal
   })
 
-
-
-
   output$initial = renderUI({
     initialInputs = lapply(rValues$nodeNames,
                              function(nodeName) {
@@ -303,14 +310,7 @@ server = function(input, output, session) {
          alt = "CM should be here")
   }, deleteFile = FALSE)
 
-  getParameterValue = function(parameter, CM) {
-    if(length(grep("constant input", parameter)) > 0)
-       return(isolate(rValues$constants[
-         gsub(" (constant input)", "", parameter, fixed=TRUE)]))
-    TO = strsplit(parameter, "->")[[1]][2]
-    FROM = strsplit(parameter, "->")[[1]][1]
-    return(CM[TO, FROM])
-  }
+
   output$movingEqPlot = renderPlot({
 
     if(rValues$movingEqPlotFreeze)
@@ -323,7 +323,8 @@ server = function(input, output, session) {
     start = getParameterValue(input$Parameter, CM)
     end = start + end_start
     return(movingEqPlot(CM = CM,
-                        paramToChange = input$Parameter,
+                        paramToChange = gsub(" (constant input)", "",
+                                             input$Parameter, fixed=TRUE),
                         constants = rValues$constants,
                         start = start,
                         end = end)
@@ -346,9 +347,16 @@ server = function(input, output, session) {
         updateNumericInput(session = session, nodeNameID(paramLabel=input$Parameter),
                                                     value = as.vector(newValue)) #JSON
         cat("input$Load_end:  startingValue=", startingValue, "  newValue=", newValue, "\n")
-        rValues$CM[strsplit(input$Parameter, "->")[[1]][2],
+        if(is.a.constant(input$Parameter)) {
+          print("TODO:  implement passing the value of a constant into rValue$constants")
+          rValues$constants[gsub(" (constant input)", "",
+                                 input$Parameter, fixed = TRUE)] <- newValue
+        }
+        else {
+          rValues$CM[strsplit(input$Parameter, "->")[[1]][2],
                    strsplit(input$Parameter, "->")[[1]][1]] <- newValue
-        print(rValues$CM)
+          print(rValues$CM)
+        }
         })
     }
 

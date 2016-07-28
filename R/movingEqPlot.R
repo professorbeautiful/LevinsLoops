@@ -17,8 +17,8 @@ movingEqPlot = function(CM,
                 end=cm.levins[1,1]+0.1,
                 constants=constants)
     )
-  }
-  if(missing(CM) | is.null(CM)) {
+    }
+    if(missing(CM) | is.null(CM)) {
     if(length(find("cm.levins")) == 0)
       data(cm.levins)
     CM = cm.levins
@@ -36,7 +36,7 @@ movingEqPlot = function(CM,
 
   increment = (end-start)/nPoints
   for (t in 2:nPoints) {
-    if(length(grep("constant input", paramToChange)) > 0) {
+    if(is.a.constant(paramToChange)) {
       TO = gsub(" (constant input)", "", paramToChange, fixed = TRUE)
       constants[TO] = constants[TO] + increment
     }
