@@ -29,36 +29,35 @@ modelStringList = c(
 )
 
 getParameterValue = function(parameter, CM) {
-  if(is.a.constant(parameter))
-    return(isolate(rValues$constants[
-      gsub(" (constant input)", "", parameter, fixed=TRUE)]))
   TO = strsplit(parameter, "->")[[1]][2]
   FROM = strsplit(parameter, "->")[[1]][1]
-  return(CM[TO, FROM])
+  if(FROM == "external")  #is.a.constant(parameter)
+    return(isolate(rValues$constants[TO]))
+  else return(CM[TO, FROM])
 }
 
 nodeNameID = function(FROM=NULL, TO=NULL, paramLabel=NULL, tag=NULL) {
   if(!is.null(paramLabel)) {
-    if(is.a.constant(paramLabel))
-        result = gsub(" (constant input)", "", paramLabel, fixed=TRUE)
-    else
+    # if(is.a.constant(paramLabel))
+    #     result = gsub(" (constant input)", "", paramLabel, fixed=TRUE)
+    # else
       result = gsub("->", "_", paramLabel) ## convert from label to id
   }
-  else if(is.null(TO))
-    result = FROM  ## create id for a constant from FROM only
+  # else if(is.null(TO))
+  #   result = FROM  ## create id for a constant from FROM only
   else
     result = paste(FROM, TO, sep="_")  ## create id for a link
   return(paste("Input", result, sep="_"))
 }
 nodeNameLabel = function(FROM, TO=NULL, tag=NULL) {
-  if(missing(TO))
-    paste0(FROM, " (", tag, ")")
-  else
+  # if(missing(TO))
+  #   paste0(FROM, " (", tag, ")")
+  # else
     paste(FROM, TO, sep="->")
 }
 
 is.a.constant = function(parameter)
-  return(length(grep("constant", parameter)) > 0)
+  return(strsplit(parameter, split="->|_")[[1]][1] == "external")
 
 
 
@@ -93,7 +92,7 @@ server = function(input, output, session) {
     names(rValues$constantsDefault) =  names(rValues$constants) = rValues$nodeNames
     try({
       for(NODE in rValues$nodeNames)
-          rValues$constants[NODE] = input[[paste0("constants_", nodeNameID(NODE))]]
+          rValues$constants[NODE] = input[[nodeNameID("external", NODE)]]
     })
   })
   make.initial = reactive({
@@ -103,7 +102,7 @@ server = function(input, output, session) {
     names(rValues$initialDefault) =  names(rValues$initial) = rValues$nodeNames
     try({
       for(NODE in rValues$nodeNames)
-        rValues$initial[NODE] = input[[paste0("initial_",nodeNameID(NODE))]]
+        rValues$initial[NODE] = input[[nodeNameID("initial", NODE)]]
     })
     cat('make.initial: '); print(rValues$initial)
   })
@@ -185,8 +184,8 @@ server = function(input, output, session) {
   output$constants = renderUI({
     constantsInputs = lapply(rValues$nodeNames,
                        function(nodeName) {
-                         numericInput(inputId = paste0("constants_", nodeNameID(nodeName)),
-                                      label = nodeNameLabel(nodeName, tag="constant input"),
+                         numericInput(inputId = nodeNameID("external", nodeName),
+                                      label = nodeNameLabel("external", nodeName),
                                       min = -1.5, max = 1.5,
                                       value = rValues$constantsDefault[nodeName],
                                       step = 0.01)
@@ -240,8 +239,8 @@ server = function(input, output, session) {
   output$initial = renderUI({
     initialInputs = lapply(rValues$nodeNames,
                              function(nodeName) {
-                               numericInput(inputId = paste0("initial_",nodeNameID(nodeName)),
-                                            label = nodeNameLabel(nodeName, tag="initial"),
+                               numericInput(inputId = nodeNameID("initial", nodeName),
+                                            label = nodeNameLabel("initial", nodeName),
                                             min = -1.5, max = 1.5,
                                             value = rValues$initialDefault[nodeName],
                                             step = 0.01)
@@ -275,7 +274,7 @@ server = function(input, output, session) {
   loadNewInitials = function(newValues) {
     try({
       for(NODE in names(newValues)) {
-        initialInputID = paste0("initial_", nodeNameID(NODE))
+        initialInputID = nodeNameID("initial", NODE)
         updateNumericInput(session = session, inputId = initialInputID,
                            value = as.vector(newValues[NODE]) )
       }
@@ -323,8 +322,7 @@ server = function(input, output, session) {
     start = getParameterValue(input$Parameter, CM)
     end = start + end_start
     return(movingEqPlot(CM = CM,
-                        paramToChange = gsub(" (constant input)", "",
-                                             input$Parameter, fixed=TRUE),
+                        paramToChange = input$Parameter,
                         constants = rValues$constants,
                         start = start,
                         end = end)
@@ -347,19 +345,14 @@ server = function(input, output, session) {
         updateNumericInput(session = session, nodeNameID(paramLabel=input$Parameter),
                                                     value = as.vector(newValue)) #JSON
         cat("input$Load_end:  startingValue=", startingValue, "  newValue=", newValue, "\n")
-        if(is.a.constant(input$Parameter)) {
-          print("TODO:  implement passing the value of a constant into rValue$constants")
-          rValues$constants[gsub(" (constant input)", "",
-                                 input$Parameter, fixed = TRUE)] <- newValue
-        }
-        else {
-          rValues$CM[strsplit(input$Parameter, "->")[[1]][2],
-                   strsplit(input$Parameter, "->")[[1]][1]] <- newValue
-          print(rValues$CM)
-        }
+        TO = strsplit(input$Parameter, "->")[[1]][2]
+        FROM = strsplit(input$Parameter, "->")[[1]][1]
+        if(FROM == "external")   ### is.a.constant(input$Parameter)
+          rValues$constants[input$Parameter] <- newValue
+        else
+          rValues$CM[TO, FROM] = newValue
         })
     }
-
   })
 
   output$cemPlot = renderImage({
@@ -378,7 +371,7 @@ server = function(input, output, session) {
     parameter_names = c(
       nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
     )
-    constant_names = nodeNameLabel(rValues$nameGrid[[1]], tag="constant input")
+    constant_names = nodeNameLabel("external", rValues$nameGrid[[2]])
     updateSelectInput(session = session, inputId = "Parameter",
                       choices = c(constant_names, parameter_names))
   })

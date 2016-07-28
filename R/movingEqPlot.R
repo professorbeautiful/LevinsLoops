@@ -36,13 +36,12 @@ movingEqPlot = function(CM,
 
   increment = (end-start)/nPoints
   for (t in 2:nPoints) {
-    if(is.a.constant(paramToChange)) {
-      TO = gsub(" (constant input)", "", paramToChange, fixed = TRUE)
+    TO = strsplit(paramToChange, "->")[[1]][2]
+    FROM = strsplit(paramToChange, "->")[[1]][1]
+    if(FROM == "external") {  ### is.a.constant(paramToChange)
       constants[TO] = constants[TO] + increment
     }
     else {
-      TO = strsplit(paramToChange, "->")[[1]][2]
-      FROM = strsplit(paramToChange, "->")[[1]][1]
       CM[TO, FROM] = CM[TO, FROM] + increment
     }
     trajectory[t, ] =
