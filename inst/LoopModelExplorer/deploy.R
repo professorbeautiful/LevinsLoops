@@ -1,3 +1,7 @@
+.installFromGithub = function(project)
+  devtools::install_github(paste0("professorbeautiful/",
+                                  project), build_vignettes=TRUE)
+
 .deploy = function(project="LevinsLoops",
                    app="LoopModelExplorer", reInstall=TRUE){
   ## TODO: first check that the html files are created committed and pushed.
