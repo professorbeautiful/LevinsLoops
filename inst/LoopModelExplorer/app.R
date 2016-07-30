@@ -1,6 +1,6 @@
-library(LevinsLoops)
-library("LoopAnalyst")
-library(shinyDebuggingPanel)
+require(LevinsLoops)
+require("LoopAnalyst")
+require(shinyDebuggingPanel)
 
 data("cm.levins", package="LoopAnalyst")
 rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
