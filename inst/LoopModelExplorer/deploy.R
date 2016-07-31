@@ -11,9 +11,9 @@
   for (app in apps) {
     if(substr(app, 1, 5) == "inst/")
       warning(".deploy: do not include 'inst' in app name.")
-    cat("wd is " %&% getwd() %&% "\n")
-    cat("wd changing to " %&% "inst/" %&% app %&% "\n")
-    setwd("inst/" %&% app)
+    cat("wd is ", getwd(), "\n")
+    cat("wd changing to ", "inst/", app, "\n")
+    setwd(paste0("inst/", app))
     tryCatch({
       require("shinyapps")
       deployApp()
@@ -26,7 +26,7 @@
 }
 
 .runDeployed = function(app="LoopModelExplorer/"){
-  system("open https://trials.shinyapps.io/" %&% app)
-  cat("shinyapps::showLogs(appDir = 'inst/" %&% app %&% "')\n")
+  system(paste0("open https://trials.shinyapps.io/", app))
+  cat("shinyapps::showLogs(appDir = 'inst/", app, "')\n")
 }
 
