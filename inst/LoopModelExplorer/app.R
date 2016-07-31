@@ -298,13 +298,18 @@ server = function(input, output, session) {
   })
 
   output$cmPlot = renderImage({
-    graph.cm(rValues$CM_qual, file="M.graphcm.dot")
+    dotFileCM = 'M.graphcm.dot'
+    graph.cm(rValues$CM_qual, file=dotFileCM)
     ### Replace the "odot" circle for negative link by "tee" or "odiamond" or "invempty"
-    # system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
-    # system("dot -Tgif -O M.graphcm.fixed.dot",
-    #        ignore.stdout=TRUE, ignore.stderr = TRUE)
-    # outfile = "M.graphcm.fixed.dot.gif"
-    list(src = "M.graphcm.dot",
+    changeArrows = F
+    if (changeArrows) {
+      system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
+      dotFileCM = 'M.graphcm.fixed.dot'
+    }
+    system(paste("dot -Tgif -O ", dotFileCM),
+           ignore.stdout=TRUE, ignore.stderr = TRUE)
+    outfile = paste0(dotFileCM, ".gif")
+    list(src = outfile,
          height=300, width=400,
          alt = "CM should be here")
   }, deleteFile = FALSE)
@@ -358,12 +363,17 @@ server = function(input, output, session) {
   output$cemPlot = renderImage({
     CEM = make.cem(rValues$CM_qual)
     CEM = t(CEM) ### Correction
-    graph.cem(CEM, file="M.graphcem.dot")
-    # system("sed s/odot/invempty/ > M.graphcem.fixed.dot < M.graphcem.dot")
-    # system("dot -Tgif -O M.graphcem.fixed.dot",
-    #        ignore.stdout=TRUE, ignore.stderr = TRUE)
-    # outfile = "M.graphcem.fixed.dot.gif"
-    list(src = "M.graphcem.dot",
+    dotFile = 'M.graphcem.dot'
+    graph.cem(CEM, file=dotFile)
+    changeArrows = F
+    if (changeArrows) {
+      system("sed s/odot/invempty/ > M.graphcem.fixed.dot < M.graphcem.dot")
+      dotFile = 'M.graphcem.fixed.dot'
+    }
+    system(paste("dot -Tgif -O ", dotFile),
+            ignore.stdout=TRUE, ignore.stderr = TRUE)
+    outfile = paste0(dotFile, ".gif")
+    list(src = outfile,
          height=300, width=400,
          alt = "CEM should be here")
   }, deleteFile = FALSE)
