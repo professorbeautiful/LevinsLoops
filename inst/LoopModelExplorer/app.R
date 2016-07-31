@@ -363,7 +363,7 @@ server = function(input, output, session) {
     # system("dot -Tgif -O M.graphcem.fixed.dot",
     #        ignore.stdout=TRUE, ignore.stderr = TRUE)
     # outfile = "M.graphcem.fixed.dot.gif"
-    list(src = "M.graphcem.dot"f,
+    list(src = "M.graphcem.dot",
          height=300, width=400,
          alt = "CEM should be here")
   }, deleteFile = FALSE)
