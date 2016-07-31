@@ -27,6 +27,6 @@
 
 .runDeployed = function(app="LoopModelExplorer/"){
   system(paste0("open https://trials.shinyapps.io/", app))
-  cat("shinyapps::showLogs(appDir = 'inst/", app, "')\n")
+  cat("Try this:  shinyapps::showLogs(appDir = 'inst/", app, "')\n")
 }
 
