@@ -289,6 +289,16 @@ server = function(input, output, session) {
     })
   }
   observe({
+    input$Parameter
+    val = as.vector(abs(getParameterValue(input$Parameter, rValues$CM)))
+    if(val <= 2) val = 1
+    updateNumericInput(session = session, inputId = "end_start",
+                       min = -2*val , max = 2*val,
+                       step = 0.1*val, value = 0.3*val)
+
+  })
+
+  observe({
     if(input$loadEquilibrium)
       isolate(loadNewInitials(rValues$predictedEq))
   })
