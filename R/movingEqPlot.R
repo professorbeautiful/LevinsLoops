@@ -74,7 +74,6 @@ movingEqPlot = function(CM,
   mtext(text="END", at=end, side = 1, line = 2)
   legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
          text.col=1:nSpecies, horiz = TRUE)
-  library(plotrix)
   try(
     if(start < end)
       plotrix::addtable2plot(display.rownames = TRUE,
