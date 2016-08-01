@@ -38,12 +38,14 @@ ETCETERA
 There is no dot and no graphviz at shinyapps.io
   system("which graphviz", intern=T)
 Here is the path: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-There is however a graphviz tree at /usr/local/lib/graphviz
+
+There is however a graphviz tree at /usr/lib/graphviz
       system("ls /usr/lib/graphviz", intern=T)
   system("find /usr/lib/graphviz -name dot", intern=T)
 system("locate dot | grep '/dot$' ", intern=T)  === nothing at remote; finds program locally.
 
 On my computer it is at /usr/local/lib/graphviz. Looks the same.
+
 In stackoverflow, [dot] AND [graphviz] AND [shinyapps] returns no hits.
 [dot] AND [shinyapps]
 I tried python gv.py
