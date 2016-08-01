@@ -1,0 +1,62 @@
+NOTES on deploying LoopModelExplorer
+Once it's deployed and running,
+  shinyapps::showLogs(appPath = "inst/LoopModelExplorer/", appFile = "app.R")
+to see what's going on.
+
+Just .deploy() doesnt work.
+  Error in library("LoopAnalyst") :
+    there is no package called ‘LoopAnalyst’
+Installs withr, whisker, xtable, mime, packrat before building LevinsLoops.
+Also generates a bunch of copies (12) of this:
+Found more than one class "pipe" in cache; using the first, from namespace 'BiocGenerics'
+
+This works (with some problems still):
+  .installFromGithub('LevinsLoops')
+  deployApp("inst/LoopModelExplorer/", "app.R")
+The app runs. The dynamic graph shows. No pictures though.
+  Error: could not find function "%>%".
+I removed it from shinyDebuggingPanel, and reloaded from github via
+  .installFromGithub('shinyDebuggingPanel')
+
+Another problem is the pictures from LoopAnalyst. Bad idea to use "dot"!
+Here is the search list:
+[1] ".GlobalEnv" "package:shinyDebuggingPanel"
+[3] "package:shinyBS" "package:LoopAnalyst"
+[5] "package:nlme" "package:LevinsLoops"
+[7] "package:shiny" "package:stats"
+[9] "package:graphics" "package:grDevices"
+[11] "package:utils" "package:datasets"
+[13] "package:methods" "Autoloads"
+[15] "package:base"
+We can see the dot files, pasting this into the R eval box:
+  system("cat M.graphcm.dot", intern=T)
+[1] "digraph G {"
+[2] "graph [bgcolor = \"transparent\", size = \"18!,18!\", nodesep=\"1\", ranksep=\"1\", rankdir=\"LR\"];"
+[3] "node [fixedsize=true, fontname=\"Sans\", fontsize=\"76.85\", shape=circle, height=\"2\", width=\"2\", style=\"setlinewidth(4)\"];"
+ETCETERA
+
+There is no dot and no graphviz at shinyapps.io
+  system("which graphviz", intern=T)
+Here is the path: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+There is however a graphviz tree at /usr/local/lib/graphviz
+      system("ls /usr/lib/graphviz", intern=T)
+  system("find /usr/lib/graphviz -name dot", intern=T)
+system("locate dot | grep '/dot$' ", intern=T)  === nothing at remote; finds program locally.
+
+On my computer it is at /usr/local/lib/graphviz. Looks the same.
+In stackoverflow, [dot] AND [graphviz] AND [shinyapps] returns no hits.
+[dot] AND [shinyapps]
+I tried python gv.py
+Fatal Python error: Interpreter not initialized (version mismatch?)
+
+I tried
+gtemp = RGraphviz::agread(filename = "inst/LoopModelExplorer/M.graphcem.dot")
+RGraphviz::plot(gtemp)
+and it 'works' but so messed up that it's useless.
+
+See my question at
+https://groups.google.com/forum/#!topic/shinyapps-users/WFQCgM7NV-8
+
+Today I posted an "issue" at
+https://github.com/rstudio/shinyapps-package-dependencies
+
