@@ -12,13 +12,14 @@ Found more than one class "pipe" in cache; using the first, from namespace 'Bioc
 
 This works (with some problems still):
   .installFromGithub('LevinsLoops')
-  deployApp("inst/LoopModelExplorer/", "app.R")
+  shinyapps::deployApp("inst/LoopModelExplorer/", "app.R")
+  You DO need the last arg "app.R".
 The app runs. The dynamic graph shows. No pictures though.
   Error: could not find function "%>%".
 I removed it from shinyDebuggingPanel, and reloaded from github via
   .installFromGithub('shinyDebuggingPanel')
 
-Another problem is the pictures from LoopAnalyst. Bad idea to use "dot"!
+Another problem is the pictures from LoopAnalyst. Bad idea to use the system "dot"!
 Here is the search list:
 [1] ".GlobalEnv" "package:shinyDebuggingPanel"
 [3] "package:shinyBS" "package:LoopAnalyst"
@@ -66,4 +67,6 @@ Apparently Rgraphviz just can't do it right. Here's a complaint from Alexis Dinn
 https://stat.ethz.ch/pipermail/bioconductor/2012-December/049899.html
 and subsequent correspondence indicates that Rgraphviz will be of no use.
 
-Problem solved! Use the DOT package.
+Problem solved! Use the DOT package. It works at shinyapps.io!
+
+(But using deployApp is a little dicey. Sometimes a required package is not available.  plotrix in particular.)
