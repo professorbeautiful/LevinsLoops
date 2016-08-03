@@ -1,6 +1,7 @@
 require(LevinsLoops)
 require("LoopAnalyst")
 require(shinyDebuggingPanel)
+require(DOT)
 
 data("cm.levins", package="LoopAnalyst")
 rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
