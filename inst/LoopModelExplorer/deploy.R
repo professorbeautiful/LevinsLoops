@@ -11,16 +11,17 @@
   for (app in apps) {
     if(substr(app, 1, 5) == "inst/")
       warning(".deploy: do not include 'inst' in app name.")
-    cat("wd is ", getwd(), "\n")
-    cat("wd changing to ", "inst/", app, "\n")
-    setwd(paste0("inst/", app))
+    appDir = paste0("inst/", app)
     tryCatch({
       require("shinyapps")
-      deployApp()
+      if(file.exists(paste0(appDir, "/app.R")))
+        deployApp(appDir = appDir, "app.R")
+      else
+        deployApp(appDir = appDir)
     },
     finally={
       cat("Try this:  shinyapps::showLogs(appDir = 'inst/", app, "')\n")
-      setwd("../..")}
+      }
     )
   }
 }
