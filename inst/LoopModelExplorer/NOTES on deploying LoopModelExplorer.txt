@@ -65,3 +65,5 @@ https://github.com/rstudio/shinyapps-package-dependencies
 Apparently Rgraphviz just can't do it right. Here's a complaint from Alexis Dinno <alexis.dinno at pdx.edu> , Mr. LoopAnalyst himself.
 https://stat.ethz.ch/pipermail/bioconductor/2012-December/049899.html
 and subsequent correspondence indicates that Rgraphviz will be of no use.
+
+Problem solved! Use the DOT package.

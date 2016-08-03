@@ -316,9 +316,10 @@ server = function(input, output, session) {
       system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
       dotFileCM = 'M.graphcm.fixed.dot'
     }
-    system(paste("dot -Tgif -O ", dotFileCM),
-           ignore.stdout=TRUE, ignore.stderr = TRUE)
-    outfile = paste0(dotFileCM, ".gif")
+    dot(DOT = paste(collapse=" ",
+                    readLines(dotFileCM)),
+        file=paste0(dotFileCM, ".svg"))
+    outfile = paste0(dotFileCM, ".svg")
     list(src = outfile,
          height=300, width=400,
          alt = "CM should be here")
@@ -373,16 +374,17 @@ server = function(input, output, session) {
   output$cemPlot = renderImage({
     CEM = make.cem(rValues$CM_qual)
     CEM = t(CEM) ### Correction
-    dotFile = 'M.graphcem.dot'
-    graph.cem(CEM, file=dotFile)
+    dotFileCEM = 'M.graphcem.dot'
+    graph.cem(CEM, file=dotFileCEM)
     changeArrows = F
     if (changeArrows) {
       system("sed s/odot/invempty/ > M.graphcem.fixed.dot < M.graphcem.dot")
-      dotFile = 'M.graphcem.fixed.dot'
+      dotFileCEM = 'M.graphcem.fixed.dot'
     }
-    system(paste("dot -Tgif -O ", dotFile),
-            ignore.stdout=TRUE, ignore.stderr = TRUE)
-    outfile = paste0(dotFile, ".gif")
+    dot(DOT = paste(collapse=" ",
+                    readLines(dotFileCEM)),
+        file=paste0(dotFileCEM, ".svg"))
+    outfile = paste0(dotFileCEM, ".svg")
     list(src = outfile,
          height=300, width=400,
          alt = "CEM should be here")
