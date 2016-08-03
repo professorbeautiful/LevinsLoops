@@ -67,6 +67,8 @@ Apparently Rgraphviz just can't do it right. Here's a complaint from Alexis Dinn
 https://stat.ethz.ch/pipermail/bioconductor/2012-December/049899.html
 and subsequent correspondence indicates that Rgraphviz will be of no use.
 
-Problem solved! Use the DOT package. It works at shinyapps.io!
+Problem solved! Use the DOT package.
+(E. F. Haghish <haghish@imbi.uni-freiburg.de>)
+It works at shinyapps.io!
 
 (But using deployApp is a little dicey. Sometimes a required package is not available.  plotrix in particular.)
