@@ -7,6 +7,6 @@ Author: Roger Day and Azim Washington
 Maintainer: Roger Day <day01@pitt.edu>
 Description: Demonstrate moving equilibria
 License: GPL-2
-Requires: plotrix, shiny, LoopAnalyst, shinyDebuggingPanel
+Requires: plotrix, shiny, LoopAnalyst, shinyDebuggingPanel, DOT
 LazyData: TRUE
 RoxygenNote: 5.0.1
