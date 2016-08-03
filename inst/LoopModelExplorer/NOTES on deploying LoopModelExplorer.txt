@@ -52,8 +52,8 @@ I tried python gv.py
 Fatal Python error: Interpreter not initialized (version mismatch?)
 
 I tried
-gtemp = RGraphviz::agread(filename = "inst/LoopModelExplorer/M.graphcem.dot")
-RGraphviz::plot(gtemp)
+  gtemp = Rgraphviz::agread(filename = "inst/LoopModelExplorer/M.graphcem.dot")
+Rgraphviz::plot(gtemp)
 and it 'works' but so messed up that it's useless.
 
 See my question at
@@ -62,3 +62,6 @@ https://groups.google.com/forum/#!topic/shinyapps-users/WFQCgM7NV-8
 Today I posted an "issue" at
 https://github.com/rstudio/shinyapps-package-dependencies
 
+Apparently Rgraphviz just can't do it right. Here's a complaint from Alexis Dinno <alexis.dinno at pdx.edu> , Mr. LoopAnalyst himself.
+https://stat.ethz.ch/pipermail/bioconductor/2012-December/049899.html
+and subsequent correspondence indicates that Rgraphviz will be of no use.
