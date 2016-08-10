@@ -155,26 +155,28 @@ server = function(input, output, session) {
     rValues$nodeNames = nodeNames = rownames(CM)
     rValues$nameGrid = nameGrid = expand.grid(rownames(CM), rownames(CM),
                                               stringsAsFactors = FALSE)
-    returnVal = lapply(1:nrow(nameGrid),
-                       function(linkNum) {
-                         nodes = unlist(nameGrid[linkNum, ])
-                         node_TO = nodes[1]
-                         node_FROM = nodes[2]
-                         parameter = nodeNameLabel(node_FROM, node_TO)
-                         numericInput(inputId = nodeNameID(node_FROM, node_TO),
-                                      label = nodeNameLabel(node_FROM, node_TO),
-                                      min = -1.5, max = 1.5,
-                                      value = getParameterValue(parameter, CM),
-                                      step = 0.01)
-                       }
+    createParameterNumericInput = function(linkNum) {
+      nodes = unlist(nameGrid[linkNum, ])
+      node_TO = nodes[1]
+      node_FROM = nodes[2]
+      parameter = nodeNameLabel(node_FROM, node_TO)
+      numericInput(inputId = nodeNameID(node_FROM, node_TO),
+                   label = nodeNameLabel(node_FROM, node_TO),
+                   min = -1.5, max = 1.5,
+                   value = getParameterValue(parameter, CM),
+                   step = 0.01)
+    }
+    returnVal = lapply(1:nrow(nameGrid), createParameterNumericInput)
+    #### Turn the list of sliders into fluid rows. ####
+    createAFluidRowForParameterInputs = function(sliders) fluidRow(
+      lapply(returnVal[sliders], column, width=3)
     )
     returnVal = lapply(
       split(1:length(returnVal),
             1 + (-1 + 1:length(returnVal)) %% length(nodeNames)
-      ),
-      function(sliders) fluidRow(
-        lapply(returnVal[sliders], column, width=3)
-      ))  #shiny::tagAppendAttributes()
+      ), createAFluidRowForParameterInputs
+    )  #shiny::tagAppendAttributes()
+    #### Wrap the fluid rows into a conditionalPanel ####
     returnVal = div(style="background:darkGrey",
         checkboxInput(inputId='sliderPanelCheckbox', value=FALSE, width='100%',
                       label=em(strong("Show/hide editor for the CM (community matrix)"))),
@@ -182,16 +184,16 @@ server = function(input, output, session) {
     )
     returnVal
   })
+  ####  Create a renderUI for constants ####
   output$constants = renderUI({
-    constantsInputs = lapply(rValues$nodeNames,
-                       function(nodeName) {
-                         numericInput(inputId = nodeNameID("external", nodeName),
-                                      label = nodeNameLabel("external", nodeName),
-                                      min = -1.5, max = 1.5,
-                                      value = rValues$constantsDefault[nodeName],
-                                      step = 0.01)
-                       }
-    )
+    createConstantsNumericInput = function(nodeName) {
+      numericInput(inputId = nodeNameID("external", nodeName),
+                   label = nodeNameLabel("external", nodeName),
+                   min = -1.5, max = 1.5,
+                   value = rValues$constantsDefault[nodeName],
+                   step = 0.01)
+    }
+    constantsInputs = lapply(rValues$nodeNames, createConstantsNumericInput)
     returnVal = fluidRow(column(2, h3("constants (inputs)")),
                          column(10, lapply(constantsInputs, column, width=2)))
     returnVal = div(style="background:darkGrey",
