@@ -203,6 +203,8 @@ server = function(input, output, session) {
     )
     returnVal
   })
+
+  #### Create a renderPlot for cmEquations ####
   output$cmEquations = renderPlot(height=function()360*length(rValues$nodeNames)/4, expr={
     makeEquationDisplay = function(cm){
       nodeNames = colnames(cm)
@@ -218,18 +220,18 @@ server = function(input, output, session) {
       formulas = sapply(nodeNames,getRow)
 
       par(fin=c(12, nNodes), mai=c(0,0,0,0)) # ,mai=c(0,0,0,0),
-      plot(0:1, 0:1, axes=F, pch="", xlab="", ylab=""
-           )
-
-      for(n in nNodes:1)
-        text(0, 1-n/nNodes, parse(text=formulas[n]), adj = 0, cex=3, xpd=NA)
+      plot(0:1, 0:1, axes=F, pch="", xlab="", ylab="")
+        for(n in nNodes:1)
+          text(0, 1-n/nNodes, parse(text=formulas[n]), adj = 0, cex=input$eqCex, xpd=NA)
     }
     makeEquationDisplay(rValues$CM)
   })
-  output$equationPanel = renderUI({
 
-      returnVal = div(fluidRow(column(2, h3("Equations")),
-                           column(8, plotOutput(outputId = "cmEquations"))),
+  ### Create a renderUI for equationPanel ####
+  output$equationPanel = renderUI({
+      returnVal = div(fluidRow(column(1, h3("Equations"),
+                                      numericInput("eqCex", "fontsize", value = 2)),
+                           column(11, plotOutput(outputId = "cmEquations"))),
                       hr())
       returnVal = div(style="background:darkGrey",
                       checkboxInput(inputId='equationPanelCheckbox', value=FALSE, width='100%',
