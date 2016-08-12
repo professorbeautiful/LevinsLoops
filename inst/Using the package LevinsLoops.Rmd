@@ -1,0 +1,36 @@
+Using the package LevinsLoops
+===
+The *moving equilibrium* ideas of Richard Levins are based on differential equation dynamic system models  for the evolution of a vector of values 
+*X* = *X*(*t*). A local equilibrium point is a solution to $\partial(X)/\partial(t) = AX = 0$. Not all equilibria are stable. Conditions of stability at equibrium points are given by Routh-Hurwitz. systems can be analyzed for stability at the 
+[IpmNet site](http://ipmnet.org/loop/loopanalysis.aspx).
+
+At a stable equilibrium, when parameters of the system change, the equilibrium point moves as well. Suppose the parameters change as $A = A(s)$ for some $s$ changing so slowly relative to $t$ that the system tracks the moving equilibrium closeky. The solution is obtained by the total derivative
+$$0 = d/ds(0) = \frac{d}{ds} (A(s)X_{eq}(s)) = \frac{\partial{A}}{\partial{s}}X_{eq}(s) + A(s) \frac{\partial{X_{eq}(s)}}{\partial{s}}.$$
+Solving for the derivative,
+$$\frac{\partial{X_{eq}(s)}}{\partial{s}} = (-1) \times A(s)^{-1} \times \frac{\partial{A}}{\partial{s}} \times X_{eq}(s).$$
+
+
+
+## The Dynamic Model Explorer
+The app [LoopModelExplorer](http://trials.shinyapps.io/LoopModelExplorer) 
+makes available the qualitative predictions of Richard Levins's qualitative approach to dynamical systems.
+
+
+The dropdown list on the upper right will select a pre-coded model. 
+The first model is from Fig 2 Levins & Schultz 1996. The loaded model string is 
+
+> R -(R R )-> H H )-> x H )-> y y )-> y 
+
+which is represented by the following diagram, created in the app window:
+creates the following graph.
+```{r fig.keep=TRUE, echo=FALSE, results='hide'}
+library(LevinsLoops)
+library(LoopAnalyst)
+out.cm(M=stringToCM(modelStringList[5]))
+DOT()
+```
+Convergence to the equilibrium point""
+```{r fig.keep=TRUE, echo=FALSE, results='hide'}
+library(LevinsLoops)
+dynamSim(stringToCM(modelStringList[5]), initial = c(1000,0,0,0,0), Tmax = 100)
+```
