@@ -36,7 +36,7 @@ dynamSim = function(M,
       trajectory[t, ] = pmax(0, trajectory[t, ])
   }
   # Prevent overlap.
-  offset = ((1:nSpecies)) * range(trajectory)/200
+  offset = ((1:nSpecies)) * diff(range(trajectory))/200
   trajectory = trajectory + outer(rep(1,ntimes), offset)
   if(plot) {
     timeline = seq(0,Tmax, by=timestep)[-1]
