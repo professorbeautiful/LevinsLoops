@@ -321,10 +321,10 @@ server = function(input, output, session) {
       system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
       dotFileCM = 'M.graphcm.fixed.dot'
     }
+    outfile = paste0(dotFileCM, ".svg")
     dot(DOT = paste(collapse=" ",
                     readLines(dotFileCM)),
-        file=paste0(dotFileCM, ".svg"))
-    outfile = paste0(dotFileCM, ".svg")
+        file=outfile)
     list(src = outfile,
          height=300, width=400,
          alt = "CM should be here")
