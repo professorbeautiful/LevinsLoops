@@ -11,23 +11,6 @@ rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
                          constants=NULL, initial=NULL,
                          movingEqPlotFreeze = FALSE
 )
-modelStringList = c(
-  'R -(R R )-> H H )-> x H )-> y y )-> y # Fig 2 Levins & Schultz 1996',
-  'a -( a     a )-> b  #Simple prey-predator',
-  'a -( a     a )-> b     b )-> c #two-level food chain',
-  'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
-  'a -( a     a )-> b     b )-> c c )-> d d )-> e # four-level food chain',
-  'a -( a     a )-> b     b )-> p1     b )-> p2      p1 )-( p2 #Two predators, positive feedback',
-  'x1 )-> x2  x2 )-( x3 x3 ->x1 x3 -( x3 # Levins 1974 fig3A ',
-  'Qout-(Qout    Pressure-( Pressure    Depth-> Pressure  Pressure ->Qout  Qout-(Depth  ### Denver Dash bathtub',
-  'Pt1 -( Pt1    Pt1 )-> Hv1    Hv1 )-> Pred
-   Pt2 -( Pt2    Pt2 )-> Hv2    Hv2 )-> Pred
-   Hv1 )-> Para
-     # Levins 1974 Parasite Fig 5 '
-    ####I -( Para   I -( Hv1   I -( Pred   I -( I
-    ### I_cide -( Parasite   I_cide -( Hvore1   I_cide -( Pred   I_cide -( I_cide
-    ###  But I_cide as a node doesnt work.
-)
 
 getParameterValue = function(parameter, CM) {
   TO = strsplit(parameter, "->")[[1]][2]
@@ -313,21 +296,17 @@ server = function(input, output, session) {
   })
 
   output$cmPlot = renderImage({
-    dotFileCM = 'M.graphcm.dot'
-    graph.cm(rValues$CM_qual, file=dotFileCM)
-    ### Replace the "odot" circle for negative link by "tee" or "odiamond" or "invempty"
-    changeArrows = F
-    if (changeArrows) {
-      system("sed s/odot/invempty/ > M.graphcm.fixed.dot < M.graphcm.dot")
-      dotFileCM = 'M.graphcm.fixed.dot'
-    }
-    outfile = paste0(dotFileCM, ".svg")
-    dot(DOT = paste(collapse=" ",
-                    readLines(dotFileCM)),
-        file=outfile)
+    outfile = makeCMplot(rValues$CM_qual)
     list(src = outfile,
          height=300, width=400,
          alt = "CM should be here")
+  }, deleteFile = FALSE)
+
+  output$cemPlot = renderImage({
+    outfile = makeCEMplot(rValues$CM_qual)
+    list(src = outfile,
+         height=300, width=400,
+         alt = "CEM should be here")
   }, deleteFile = FALSE)
 
 
@@ -376,24 +355,7 @@ server = function(input, output, session) {
     }
   })
 
-  output$cemPlot = renderImage({
-    CEM = make.cem(rValues$CM_qual)
-    CEM = t(CEM) ### Correction
-    dotFileCEM = 'M.graphcem.dot'
-    graph.cem(CEM, file=dotFileCEM)
-    changeArrows = F
-    if (changeArrows) {
-      system("sed s/odot/invempty/ > M.graphcem.fixed.dot < M.graphcem.dot")
-      dotFileCEM = 'M.graphcem.fixed.dot'
-    }
-    dot(DOT = paste(collapse=" ",
-                    readLines(dotFileCEM)),
-        file=paste0(dotFileCEM, ".svg"))
-    outfile = paste0(dotFileCEM, ".svg")
-    list(src = outfile,
-         height=300, width=400,
-         alt = "CEM should be here")
-  }, deleteFile = FALSE)
+
   observe({
     parameter_names = c(
       nodeNameLabel(rValues$nameGrid[[1]], rValues$nameGrid[[2]])
