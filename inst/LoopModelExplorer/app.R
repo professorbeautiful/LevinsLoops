@@ -430,7 +430,7 @@ ui = fluidPage(
            column(6,
                   textInput(inputId = "IpmnetString",
                             width="800px",
-                            label = HTML("For pasting at <a href=http://ipmnet.org/loop/loopanalysis.aspx> Ipmnet.org</a>"),
+                            label = HTML("For pasting at <a href=http://ipmnet.org/loop/loopanalysis.aspx target='_blank'> Ipmnet.org</a>"),
                             value = ""
                   ))
            ),
