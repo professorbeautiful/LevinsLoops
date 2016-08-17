@@ -49,8 +49,6 @@ server = function(input, output, session) {
   thisSession <<- session
   shinyDebuggingPanel::makeDebuggingPanelOutput(session)
 
-
-
   make.CM = reactive({
     ### responds to the slider values.
     rValues$CMsaved = rValues$CM
@@ -98,6 +96,11 @@ server = function(input, output, session) {
   })
   observe(priority = 1, {
     input$modelString ## Reactivity only to input$modelString
+    # Silly experiment abandoned.
+    # updateTextInput(session=session, inputId = "modelString",
+    #                 value = HTML(gsub("[-()><]+",
+    #                                   "<div style='color:blue font-weight:bold'> \\1 </div>",
+    #                                   input$modelString)))
     isolate({
       rValues$comment = gsub(".*#", "", input$modelList)
       rValues$modelStringModified <-
@@ -131,6 +134,7 @@ server = function(input, output, session) {
   })
   output$effectMatrix = renderTable({
     cat("CEM: effectMatrix\n")
+    ## Note that out.cm is just a formatter producing +,0,-,?.
     print(out.cm(t(attr(rValues$dynamSimResult, "effectMatrix"))))
   })
   output$sliders = renderUI( {
@@ -396,16 +400,55 @@ ui = fluidPage(
                             value = ""
                   ))
            ),
-  fluidRow(column(6,
-                  imageOutput("cmPlot"),
-                  h2("Community matrix"),
-                  tagAppendAttributes(style="font-size:200%",
-                                      tableOutput("cmMatrix")))
-           ,column(6,
-                   imageOutput("cemPlot"),
-                   h2("Effect matrix"),
-                   tagAppendAttributes(style="font-size:200%",
-                                       tableOutput("effectMatrix")))
+  fluidRow(
+    column(6,
+           imageOutput("cmPlot"),
+           h2("Community matrix"),
+           fluidRow(
+             column(1,
+                    div(
+                      # with rotate, 'height' changes the WIDTH, and 'top' is horizontal.
+                      # font-size has no effect
+                      #width:400px; height:0px;
+                      #border: 5px solid green;
+                      style='
+                      position: relative; top:180px;
+                      font-size:36; font-style: italic; font-weight:bold;
+                      -webkit-transform: rotate(-90deg);
+                      ',
+                      HTML("on&nbsp;these&nbsp;variables
+                           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;"))),
+             column(11,
+                    div(style='font-size:36;font-style: italic; font-weight:bold;',
+                        "Direct effect of..."),
+                    tagAppendAttributes(style="font-size:200%",
+                                        tableOutput("cmMatrix")))
+           )
+    )
+    ,column(6,
+            imageOutput("cemPlot"),
+            h2("Effect matrix"),
+            fluidRow(
+              column(1,
+                     div(
+                       # with rotate, 'height' changes the WIDTH, and 'top' is horizontal.
+                       # font-size has no effect
+                       #width:400px; height:0px;
+                       #border: 5px solid green;
+                       style='
+                      position: relative; top:180px;
+                      font-size:36; font-style: italic; font-weight:bold;
+                      -webkit-transform: rotate(-90deg);
+                      ',
+                       HTML("on&nbsp;these&nbsp;variables
+                           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&darr;"))),
+              column(11,
+                     div(style='font-size:36;font-style: italic; font-weight:bold;',
+                         "Ultimate effect of..."),
+                     tagAppendAttributes(style="font-size:200%",
+                                         tableOutput("effectMatrix")))
+            )
+    )
   ),
   tagAppendAttributes(style="border-width:10px", hr()),
   fluidRow(column(offset = 0, 12,  uiOutput("sliders"))),
