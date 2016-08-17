@@ -1,3 +1,6 @@
+---
+output: html_document
+---
 Using the package LevinsLoops
 ===
 The *moving equilibrium* ideas of Richard Levins are based on differential equation dynamic system models  for the evolution of a vector of values 
@@ -19,16 +22,19 @@ makes available the qualitative predictions of Richard Levins's qualitative appr
 The dropdown list on the upper right will select a pre-coded model. 
 The first model is from Fig 2 Levins & Schultz 1996. The loaded model string is 
 
-> R -(R R )-> H H )-> x H )-> y y )-> y 
+> R -o R Ro->H H o->x Ho->y y-oy 
+> R -< R R>->H H >->x H>->y y>-y 
 
 which is represented by the following diagram, created in the app window:
 creates the following graph.
-```{r fig.keep=TRUE, echo=FALSE, results='hide'}
+
+```{r fig.keep=TRUE, eval=TRUE, message=FALSE, warning=FALSE, fig.width=1, fig.height=8, echo=FALSE, results='asis'}
 library(LevinsLoops)
 library(LoopAnalyst)
-out.cm(M=stringToCM(modelStringList[5]))
-DOT()
+library(DOT)
+invisible(makeCMplot(stringToCM(modelStringList[1]), size=4))
 ```
+
 Convergence to the equilibrium point""
 ```{r fig.keep=TRUE, echo=FALSE, results='hide'}
 library(LevinsLoops)
