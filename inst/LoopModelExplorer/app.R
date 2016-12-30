@@ -2,7 +2,7 @@ require(LevinsLoops)
 require("LoopAnalyst")
 require(shinyDebuggingPanel)
 require(DOT)
-
+### this is a comment
 data("cm.levins", package="LoopAnalyst")
 rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
                          modelStringModified = FALSE,
