@@ -1,0 +1,94 @@
+CONVERGENCE ISSUES AND RESOURCES
+https://en.wikipedia.org/wiki/Stiff_equation is a terrific resource
+for beginnning to understand the numeric issues.
+And
+https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods
+Also study the Lyapunov and Routh-Hurwitz stability criteria.
+
+Libraries:
+    diffEq rmutil deSolve pracma seem
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+Puzzle 1 (SOLVED)
+
+If you load model 1,
+     R -(R R )-> H H )-> x H )-> y y )- y # Fig 2 Levins & Schultz 1996
+you get
+	                    R	      y	     H	      x
+predicted equilibrium	800.00	0.00	200.00	600.00
+final in simulation	  805.00	10.00	215.00	620.00
+The finals are too big by 5, 10, 15, 20.
+
+Lower the initial from 1000 to 100, or 10, or 1, and you get
+	R	y	H	x
+predicted equilibrium	800.00	0.00	200.00	600.00
+final in simulation	804.00	8.01	212.01	616.02
+The finals are too big by 4, 8, 12, 16.
+Likewise, lowering external->R   leads to the same final.
+
+SOLVED   the offset introduced in dynamSim to prevent overlap of curves.
+Fixed it, and the discrepancy is gone.
+
+=-=-=-=-=-=-=-=-=-=
+
+Puzzle 2:  (SOLVED)
+The predicted and observed changes agree for all external->(node),
+but R->R and x->R my predictions disagree with Effect Matrix and Observed.
+y->R the Observed is different (all zero),
+AHA, just make the delta very small.
+That makes the Effect Matrix and Predicted agree.
+AHA, if you get all zeros, a small tweak in a CM entry canmake thecorrect pattern appear.  For example, for y->x, should get + - - +, Observed is 0 0 0 0,
+but if you change the CM for x->y from zero to 0.1, you get Observed is + - - +.
+=-=-=-=-=-=-=-=-=-=
+
+Puzzle 3:  Putting in the example of P&L example 2.7, with ones everywhere,
+First off, the LoopAnalyst package says "A fully connected Community Matrix is not analyzable via loop analysis." and yet it seems analyzable.
+Ihe interface has the system stable for aXX < 0.158 or so, but the theory and IPMnet claim stability for larger values.
+The system is "ambiguous" at IPMnet, and won't simulate (LAPACK error).
+n:=2:A:=array(1..n,1..n,[[-1,-1],[1,1]]);[R,H]
+This system
+n:=2:A:=array(1..n,1..n,[[-1,-1],[1,0.9]]);[R,H]
+is "stable" at ipmnet, but blows up.
+Lowering H->H (i.e. aXX) to 0.158 & it is stable, but at 0.159 it blows up.
+No paradoxical predictions.
+=-=-=-=-=-=-=-=-=-=-
+
+Puzzle 4:
+How do the constant inputs relate to the self-damping/self-boosting terms?
+Odd things happen in example 2.7 as you move the constants away from the defaults.
+=-=-=-=-=-=-=-
+
+Puzzle 5:
+Switching from first to second model,
+Error in rValues$constants[NODE] = input[[nodeNameID("external", NODE)]] :
+  replacement has length zero
+Nothing wrong with the model... but problem is in make.constants()
+Just a bug to solve.  Not replicable currently.
+=-=-=-=-=-=-=-
+
+Puzzle:
+
+Doing
+      N-(N N)->G P-(P P)->G P-(P P)->B B-(G  #P&L Example 4.3a, p66
+and setting B->G  =  -2,  to make the long loop  B-(G-(P->B  stronger.
+The paradoxical effect according to the CEM is P->G.
+It looks correct.. but if you take away negatives disallowed,
+it all blows up.
+
+Community matrix
+on these variables        ↓
+Direct effect of...
+N	P	B	G
+N	-	0	0	-
+P	0	-	-	-
+B	0	+	0	0
+G	+	+	-	0
+
+Effect matrix
+on these variables        ↓
+Ultimate effect of...
+N	P	B	G
+N	-2	2	+	-
+P	0	0	-	0
+B	-	+	+	-
+G	+	-2	-	+
