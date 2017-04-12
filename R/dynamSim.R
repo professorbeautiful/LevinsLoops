@@ -6,6 +6,7 @@ dynamSim = function(M,
                     findEq=TRUE,
                     returnLast=FALSE,
                     noNeg=TRUE,
+                    useOdeSolver=FALSE,
                     attachAttributes=FALSE) {
   if(missing(M)) {
     if(length(find("cm.levins")) == 0)
@@ -25,6 +26,21 @@ dynamSim = function(M,
   if(missing(constants))
     constants = c(1000,  rep(death, nSpecies-1))
   ntimes = ceiling(Tmax/timestep)
+
+  ######  using desolve::ode
+  if(useOdeSolver)
+    ode_output = ode(y=initial, times = seq(1,Tmax, by = timestep),
+                     func=function(t, y, parms,...){
+                       values = parms$values
+                       list( c(constants +
+                                 y %*% t(values)) )
+                     },
+                     parms = list(values=values),
+                     method = "rk4"
+    )
+
+  ##### RESUMING  #####
+
   trajectory = matrix(NA, nrow = ntimes, ncol=ncol(M))
   colnames(trajectory) = colnames(M)
   trajectory[1, ] = initial
@@ -37,7 +53,7 @@ dynamSim = function(M,
   }
   # Prevent overlap.
   offset = ((1:nSpecies)) * diff(range(trajectory))/200
-  trajectory = trajectory + outer(rep(1,ntimes), offset)
+  #trajectory = trajectory + outer(rep(1,ntimes), offset)
   if(plot) {
     timeline = seq(0,Tmax, by=timestep)[-1]
     plot(timeline, trajectory[ , 1], pch="",
@@ -45,7 +61,7 @@ dynamSim = function(M,
          ylab="trajectories",
          main="")
     for(species in 1:nSpecies)
-      lines(timeline, trajectory[ , species], col=species)
+      lines(timeline, trajectory[ , species] + offset[species], col=species)
     abline(h=initial+offset, col=1:nSpecies, lty=2)
     legend(x = par()$usr[1], y = par()$usr[4], legend = rownames(M), yjust = 0, xpd = NA,
            text.col=1:nSpecies, horiz = TRUE)
@@ -58,9 +74,12 @@ dynamSim = function(M,
     returnVal = trajectory[length(timeline), ]
   else returnVal = trajectory
   if(attachAttributes) {
-    `attr<-`(returnVal, "predictedEq", predictedEq)
-    `attr<-`(returnVal, "effectMatrix", LoopAnalyst::make.cem(M))  ### too much time!
-    #`attr<-`(returnVal, "effectMatrix", 1:4)
+    attr(returnVal, "predictedEq") = predictedEq
+    attr(returnVal, "effectMatrix") = LoopAnalyst::make.cem(M)
+    if(useOdeSolver)
+      attr(returnVal, "ode_output") = ode_output
+    ### too much time!
+    #`attr<-`(returnVal, "effectMatrix", 1:4) # syntax does not work.
   }
   if(print) return(returnVal)
   return(returnVal)
@@ -72,4 +91,5 @@ modifyValues = function(M, from, to, increment) {
 options(digits=3)
 revRows = function(M) M[nrow(M):1, ]
 if(interactive())
-  print(revRows(dynamSim())[1,])
+#  print(revRows(dynamSim())[1,])
+  dynamSim_output = dynamSim(initial=c(100,100,100,100), attachAttributes = TRUE)
