@@ -1,5 +1,7 @@
 modelStringList = c(
   'R -(R R )-> H H )-> x H )-> y y )- y # Fig 2 Levins & Schultz 1996',
+  'N -( N  N )-> X  X <-> X   # P&L Example 2.7',
+  'N-(N N)->G P-(P P)->G P-(P P)->B B-(G  #P&L Example 4.3a, p66',
   'a -( a     a )-> b  #Simple prey-predator',
   'a -( a     a )-> b     b )-> c #two-level food chain',
   'a -( a     a )-> b     b )-> c c )-> d #three-level food chain',
