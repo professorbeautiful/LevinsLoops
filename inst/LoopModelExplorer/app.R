@@ -2,8 +2,11 @@ require(LevinsLoops)
 require("LoopAnalyst")
 require(shinyDebuggingPanel)
 require(DOT)
+require(diffEq)  ## rmutil deSolve pracma seem
+
 ### this is a comment
 data("cm.levins", package="LoopAnalyst")
+source("../../R/modelStringList.R")
 rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
                          modelStringModified = FALSE,
                          constantsDefault=c(1000, rep( -200, 4)),
