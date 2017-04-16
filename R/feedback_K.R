@@ -32,7 +32,7 @@ feedback_K = function(M) {
   ## Lmk = L(m, k) is a product of m disjunct loops totaling k elements.
   Fk = sapply(1:nrow(M), function(k)
     with(allData[allData$nV==k & allData$disj, ],
-         sum((-1)^(nL+1) * setValues)
+         sum((-1)^(nL+1) * Lmk)
     )
   )
   return(Fk)
