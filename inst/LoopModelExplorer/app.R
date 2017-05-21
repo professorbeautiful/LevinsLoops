@@ -6,9 +6,9 @@ require(diffEq)  ## rmutil deSolve pracma seem
 
 ### this is a comment
 data("cm.levins", package="LoopAnalyst")
-cat("dir(system.file(package = 'LevinsLoops', 'LoopModelExplorer')) \n")
-print(dir(system.file(package = 'LevinsLoops', 'LoopModelExplorer')))
-source("modelStringList.R")
+print(getwd())
+source(system.file(package = 'LevinsLoops',
+                   'LoopModelExplorer', 'modelStringList.R'))
 rValues = reactiveValues(CM=cm.levins, CM_qual = cm.levins,
                          modelStringModified = FALSE,
                          constantsDefault=c(1000, rep( -200, 4)),
