@@ -2,6 +2,7 @@ require(LevinsLoops)
 require("LoopAnalyst")
 require(shinyDebuggingPanel)
 require(DOT)
+require(plotrix)
 require(diffEq)  ## rmutil deSolve pracma seem
 
 ### this is a comment
