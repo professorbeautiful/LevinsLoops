@@ -20,8 +20,8 @@
         deployApp(appDir = appDir)
     },
     finally={
-      cat("Try this:  shinyapps::showLogs(appDir = 'inst/", app, "')\n")
-      }
+      cat(paste0("Try this:  shinyapps::showLogs(appPath = ',
+             'inst/", app, "')\n"))      }
     )
   }
 }
